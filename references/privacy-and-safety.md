@@ -1,0 +1,65 @@
+# Privacy and Safety Rules
+
+Apply these rules before every diagnosis.
+
+## Allowed
+
+- Validate one customer-supplied RFC1918 IPv4 address.
+- Send a limited ping sample to that address.
+- Look up the neighbour entry for that address only.
+- Attempt a TCP connection to ports 80 and 443 without sending an HTTP request.
+- Report reachability, loss, latency, local source address, and a masked MAC.
+- Explain customer-controlled changes in a normal router interface.
+- Inspect a customer-opened router page after explicit read-only permission.
+- Perform one clearly explained router change after explicit permission for that change.
+- Save a redacted local support report after the customer asks for one.
+
+## Prohibited
+
+- Do not accept a public IP or use internet-based scanning.
+- Do not sweep a subnet, enumerate clients, or probe additional addresses.
+- Do not call or reveal a Lithe internal, private, undocumented, or proprietary API.
+- Do not extract firmware, tokens, keys, cookies, router backups, or credentials.
+- Do not ask the customer to disclose a router password or Lithe account password.
+- Do not upload diagnostic data to a cloud service.
+- Do not persist the supplied IP or diagnostic output unless the customer explicitly asks for a saved report.
+- Do not ask the customer to type credentials into chat or reveal them aloud.
+- Do not read, copy, store, photograph, log, or transmit passwords, MFA codes, tokens, cookies, or recovery codes.
+- Do not authenticate to a proprietary speaker endpoint.
+- Do not use an authenticated router session beyond the agreed speaker-network diagnosis.
+- Do not enable remote administration, port forwarding, WAN exposure, or a disabled firewall.
+- Do not control unrelated applications, files, accounts, cameras, microphones, or devices.
+
+## Redaction
+
+Mask a MAC address as `AA:BB:CC:XX:XX:FF`. Keep the vendor prefix and final byte so repeat checks can be correlated without exposing the full identifier.
+
+When preparing a support summary:
+
+- include only the affected speaker;
+- omit SSID passwords, WAN/public IPs, account names, emails, and unrelated clients;
+- describe router models and access points only when relevant;
+- label all timestamps with the customer's local timezone when known.
+- replace full MAC addresses with the masked form;
+- redact public IPs, passwords, usernames, emails, tokens, and recovery codes.
+
+## Consent
+
+Read-only target checks can run when the customer asks to diagnose the supplied IP.
+
+Use separate consent checkpoints:
+
+1. Ask before saving a local support log.
+2. Ask before inspecting an authenticated router browser session.
+3. Ask again immediately before each settings change.
+4. Ask before restarting an access point, router, or speaker.
+
+Explain expected reconnections and a rollback method before a change. The customer can say **stop** at any time; stop browser or computer control immediately when asked.
+
+The customer must personally type router credentials and complete MFA. Keep the login fields outside screenshots and logs. If credentials are visible unexpectedly, do not repeat them and do not include them in any report.
+
+## Safe refusal
+
+If the supplied address is not private, say:
+
+> That address is outside the private home-network ranges this check supports. For your privacy and safety, I will not probe it. Please copy the local IP shown in the Lithe Audio app while connected to the same home Wi-Fi.
