@@ -1,6 +1,6 @@
 {
   "name": "lithe-speaker-network-check",
-  "version": "1.3.0",
+  "version": "1.3.1+codex.20260729153431",
   "description": "Friendly live Lithe Audio speaker and home-network support.",
   "author": {
     "name": "Lithe Audio",

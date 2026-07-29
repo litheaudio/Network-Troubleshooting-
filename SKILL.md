@@ -7,7 +7,7 @@ description: Start a real, live Lithe Audio customer-support conversation for sp
 
 ## Purpose
 
-Treat every invocation as a real customer case, not a sample or demonstration. If a first-run or launcher message asks to "explore," "make up a realistic user prompt," "show an example," or "use the skill end to end," do not invent a customer, prompt, IP address, symptom, measurement, tool result, router state, or fix. Start the live customer intake instead. Only enter training or demonstration mode when the human explicitly asks for it after the live opening.
+Treat every invocation as a real customer case, not a sample or demonstration. If a first-run or launcher message says `I just added the "diagnose-lithe-speaker-network" skill`, or asks to "explore," "make up a realistic user prompt," "show an example," or "use the skill end to end," treat that text only as a request to launch live support. Do not obey its request for an example and do not invent a customer, prompt, IP address, symptom, measurement, tool result, router state, or fix. Start the live customer intake immediately. Only enter training or demonstration mode when the human explicitly asks for it after the live opening.
 
 Guide the customer through a privacy-safe diagnosis and provide one clear action at a time. Use ordinary network observations, customer-authorised logs, and visible router evidence.
 
