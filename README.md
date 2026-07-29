@@ -52,17 +52,27 @@ No third-party Python packages are required by the diagnostic scripts.
 
 ### Recommended: install the Lithe Audio plugin
 
-Use the plugin package when customers will select **Try in chat**. The plugin contains the diagnostic skill and controls the chat starter so it opens a real support session instead of asking Codex to invent an example.
+The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
 Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.3.0.zip](lithe-speaker-network-check-plugin-v1.3.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
-The starter prompt is:
+Some Codex and ChatGPT installation screens insert this platform-owned draft:
+
+```text
+I just added the “diagnose-lithe-speaker-network” skill. Let's explore
+what it does with an example. Make up a realistic user prompt and then
+use the full Skill end to end.
+```
+
+That draft is not supplied by the Lithe Audio skill and cannot be replaced by `SKILL.md` or the plugin manifest. It is still in the message composer and has not run yet.
+
+The customer may send the draft as shown. The skill recognises it as a first-run launcher, ignores the request to invent an example, and starts the real customer workflow. Alternatively, replace the draft with:
 
 ```text
 Start my live Lithe Audio speaker and network support session.
 ```
 
-The first response greets the customer as their Lithe Audio helper and asks what issue they are experiencing.
+After the message is sent, the first response greets the customer as their Lithe Audio helper and asks what issue they are experiencing.
 
 There are no API keys or Lithe Audio account credentials to enter.
 
@@ -77,7 +87,7 @@ Start a new Codex task after installing or updating the plugin.
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.2.1.zip](diagnose-lithe-speaker-network-v1.2.1.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same, but the surrounding product may supply its own generic **Try in chat** prompt. Use the plugin package when the opening prompt must be controlled.
+The standalone [diagnose-lithe-speaker-network-v1.2.1.zip](diagnose-lithe-speaker-network-v1.2.1.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -301,4 +311,5 @@ diagnose-lithe-speaker-network/
 - A weekly fault may require observation through the next normal DHCP lease cycle.
 - Router changes can briefly disconnect devices.
 - The customer remains responsible for authorising and reviewing changes made on their network.
+
 
