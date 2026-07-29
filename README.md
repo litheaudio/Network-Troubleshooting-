@@ -44,57 +44,28 @@ No third-party Python packages are required by the diagnostic scripts.
 
 ## Installation
 
-### Install from a release ZIP
+### Install the skill in Codex
 
-Download and extract `diagnose-lithe-speaker-network` into the Codex skills directory.
+The normal customer installation method is:
 
-Windows PowerShell:
+1. Open the Lithe Speaker Network Check skill in Codex using the link supplied by Lithe Audio.
+2. Select **Install**.
+3. Start a new Codex task.
 
-```powershell
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\skills" | Out-Null
-Expand-Archive .\diagnose-lithe-speaker-network-v1.1.0.zip `
-  -DestinationPath "$env:USERPROFILE\.codex\skills"
-```
+That is all most customers need to do. There are no API keys or Lithe Audio account credentials to enter.
 
-macOS or Linux:
+If Lithe Audio shared the skill through a Codex workspace, open **Plugins**, select the **Skills** tab, find the shared skill and select **Install** from its menu.
 
-```bash
-mkdir -p ~/.codex/skills
-unzip diagnose-lithe-speaker-network-v1.1.0.zip -d ~/.codex/skills
-```
+### If you received a skill file
 
-Restart Codex after installation.
+If Lithe Audio sent you a skill file instead of an installation link:
 
-The resulting structure should be:
+1. Open **Plugins** in Codex.
+2. Select the **Skills** tab.
+3. Select **Create**, then **Upload from your computer**.
+4. Choose the Lithe Audio skill file and complete the installation.
 
-```text
-~/.codex/skills/
-└── diagnose-lithe-speaker-network/
-    ├── SKILL.md
-    ├── agents/
-    ├── references/
-    └── scripts/
-```
-
-### Install directly from GitHub
-
-If this repository contains the skill at its root:
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/YOUR-ORG/YOUR-REPOSITORY.git `
-  "$env:USERPROFILE\.codex\skills\diagnose-lithe-speaker-network"
-```
-
-macOS or Linux:
-
-```bash
-git clone https://github.com/YOUR-ORG/YOUR-REPOSITORY.git \
-  ~/.codex/skills/diagnose-lithe-speaker-network
-```
-
-Replace the example URL with the actual repository URL, then restart Codex.
+If **Install**, **Skills** or **Upload** is unavailable, ask the Codex workspace administrator to enable Skills and skill installation.
 
 ## Find the speaker IP address
 
