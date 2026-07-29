@@ -1,6 +1,6 @@
 {
   "name": "lithe-speaker-network-check",
-  "version": "1.3.1+codex.20260729153431",
+  "version": "1.4.0+codex.20260729190155",
   "description": "Friendly live Lithe Audio speaker and home-network support.",
   "author": {
     "name": "Lithe Audio",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Lithe Speaker Network Check",
     "shortDescription": "Friendly live speaker and network support",
-    "longDescription": "Starts a real Lithe Audio customer-support conversation, asks one simple question at a time, checks one customer-provided private speaker IP address, analyses authorised network evidence, and guides or supervises approved router fixes.",
+    "longDescription": "Starts a real Lithe Audio case, validates one private speaker IP, asks exactly five key questions, runs target-only measurements, analyses authorised speaker and access-point evidence, and guides or supervises approved fixes.",
     "developerName": "Lithe Audio",
     "category": "Productivity",
     "capabilities": [

@@ -1,50 +1,77 @@
-# Speaker and Network Log Analysis
+# Speaker, Router and Access-Point Evidence
 
-Analyse only customer-provided logs or logs visible through an official, supported Lithe Audio or router interface. Obtain permission first. Do not probe undocumented endpoints or expose proprietary implementation details.
+Use only customer-authorised logs, official supported interfaces and the supplied private speaker IP. Do not probe hidden endpoints or expose proprietary details.
 
-## Prepare the evidence
+## Acquire evidence
 
-1. Ask for the customer's local timezone and the best known failure window.
-2. Confirm which speaker the log belongs to using only the supplied private IP or a masked MAC.
-3. Limit review to the smallest useful time window, normally 15 minutes before and after the fault.
-4. Redact credentials, tokens, public IPs, full MAC addresses, emails, usernames, unrelated clients, and internal endpoint paths.
-5. Check timestamp continuity and note clock resets or missing intervals.
+After the five-question intake and live target check, ask one read-only permission checkpoint.
 
-## Evidence patterns
+When browser or computer control is available:
 
-| Pattern near the failure time | Interpretation | Corroborate with |
+1. Open the customer-approved official speaker, router, access-point or mesh interface.
+2. Let the customer enter credentials and MFA.
+3. Search directly for the supplied speaker IP.
+4. Avoid recording unrelated client details.
+5. Open only supported event, diagnostics or support-log views.
+6. Restrict the time window to 15 minutes before and after the reported fault when possible.
+7. Record the current/historical serving AP, band, RSSI, retries, drops, roaming, backhaul and DHCP state when shown.
+
+If no supported log view is visible, guide the customer to export the official support log. Never guess a URL or call an undocumented log endpoint.
+
+## Run local analysis
+
+Use:
+
+```powershell
+python scripts/analyze_speaker_logs.py speaker.log `
+  --failure-time "2026-07-29 14:30:00" `
+  --timezone "Europe/London" `
+  --json
+```
+
+The analyser:
+
+- reads local files only;
+- scans no device or network;
+- emits category counts and timestamps rather than raw lines;
+- identifies DHCP, Wi-Fi disconnect, timeout/loss, route/gateway, reboot/watchdog, discovery and roaming/AP-change patterns;
+- separates events inside the selected failure window from unrelated history;
+- does not declare a root cause automatically.
+
+## Correlate evidence
+
+| Pattern near the failure | Meaning to test | Corroborate with |
 |---|---|---|
-| DHCP discover/request repeats, lease loss, address change, duplicate-IP warning | DHCP churn or address conflict | Router lease history, reservation state, old/new IP |
-| Wi-Fi deauthentication, disassociation, authentication failure, repeated reconnect | Radio loss, roaming, security handshake, or AP steering | RSSI, retries, AP changes, channel events |
-| Packet loss, retransmit, socket timeout, connection timeout | Connectivity interruption | Ping loss/latency, AP retry/drop counters |
-| Gateway unreachable, ARP failure, no route | Local path or VLAN/isolation problem | Selected source route, LAN/VLAN, client isolation |
-| Reboot, watchdog, boot sequence, uptime reset | Speaker restarted | Power event, router offline history, timestamp gap |
-| DNS or NTP failures only | Supporting evidence, not proof of audio failure | General internet outage, clock jump, gateway state |
-| Multicast/discovery join failure while IP remains reachable | Local discovery blocked | Guest network, VLAN, multicast or client isolation |
-| AP/channel change at the same time as audio interruption | Roaming or RF event | Connected AP history, channel/DFS event, RSSI |
+| DHCP renew/lease failure, address change or conflict | DHCP churn or duplicate address | Router lease history and reservation |
+| Deauthentication, disassociation or reconnect | Radio loss, steering or roaming | Serving AP, RSSI, retries and AP change |
+| Timeout, retransmit or packet loss | Connectivity interruption | Ping loss and AP retry/drop counters |
+| Gateway unreachable, ARP failure or no route | Local path, VLAN or isolation issue | Gateway, LAN/VLAN and client isolation |
+| Reboot, watchdog or uptime reset | Speaker restarted | Uptime, power history and timestamp gap |
+| Discovery or multicast failure while IP remains reachable | Local discovery blocked | Guest network, VLAN and multicast controls |
+| Roam, BSSID/AP or channel change | AP steering, RF or DFS event | AP history, backhaul, channel and RSSI |
 
-## Smoking-gun standard
+## Confidence standard
 
-Call evidence **confirmed** only when:
+Use **Confirmed** only when the event:
 
-- the event time overlaps the reported failure;
-- it belongs to the affected speaker;
-- the event directly explains loss of reachability, address, association, restart, or discovery; and
-- another observation supports it when available.
+- belongs to the affected speaker;
+- overlaps the reported failure;
+- directly explains lost address, association, reachability, restart or discovery; and
+- has corroborating evidence when available.
 
-Use **likely** when two or more independent observations align but a direct failure event is absent. Use **possible** for a single ambiguous warning.
+Use **Likely** when at least two independent observations align. Use **Possible** for one ambiguous event.
 
-Do not infer causation from ordinary startup messages, historic warnings outside the failure window, one timeout without customer impact, or a clean short sample.
+Do not call startup messages, old warnings, one timeout outside the failure window or a clean short sample a smoking gun.
 
-## Customer explanation
+## Customer result
 
-Explain evidence in this order:
+Report:
 
-1. **What happened:** the shortest safe description of the event.
-2. **When:** customer-local time and relation to the reported dropout.
-3. **Meaning:** plain-language impact.
-4. **Confidence:** confirmed, likely, or possible.
-5. **Next proof:** one check that would confirm or reject the cause.
-6. **Smallest fix:** one reversible action tied to the evidence.
+1. measured live loss and latency;
+2. the shortest redacted event summary;
+3. serving access-point evidence;
+4. confidence;
+5. one next proof;
+6. one smallest reversible fix.
 
-Never paste a large raw log into chat or a report. Preserve only redacted event summaries and measurements needed for support.
+Never paste complete logs, credentials, public IPs, full MAC addresses, unrelated clients or internal paths into chat or a support report.

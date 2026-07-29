@@ -15,6 +15,7 @@ Apply these rules before every diagnosis.
 - Save a redacted local support report after the customer asks for one.
 - Analyse customer-provided speaker or router logs after permission.
 - Inspect logs exposed through an official supported interface after read-only permission.
+- Run the bundled local log analyser against customer-authorised exported log files.
 
 ## Prohibited
 
@@ -29,6 +30,7 @@ Apply these rules before every diagnosis.
 - Do not read, copy, store, photograph, log, or transmit passwords, MFA codes, tokens, cookies, or recovery codes.
 - Do not authenticate to a proprietary speaker endpoint.
 - Do not discover, call, or document a hidden or undocumented speaker log endpoint.
+- Do not describe local log-file analysis as direct speaker interrogation when no supported log view or export was accessed.
 - Do not retain or reproduce complete raw logs when a redacted event summary is sufficient.
 - Do not use an authenticated router session beyond the agreed speaker-network diagnosis.
 - Do not enable remote administration, port forwarding, WAN exposure, or a disabled firewall.

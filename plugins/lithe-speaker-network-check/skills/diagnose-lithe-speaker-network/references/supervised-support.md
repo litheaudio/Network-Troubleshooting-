@@ -2,6 +2,8 @@
 
 Follow this workflow when the customer asks Codex to inspect or fix the router because they are unsure.
 
+Enter this workflow only after the five-question intake and target-only connection test. Do not restart the customer interview. Use the supplied IP and existing answers to inspect the speaker, its serving access point and the relevant failure window directly.
+
 ## 1. Set expectations
 
 Tell the customer:
@@ -34,7 +36,7 @@ Inspect only what is relevant:
 - current IP and masked MAC;
 - online/offline history where shown;
 - band, channel, channel width, signal/RSSI, retries, and connected AP;
-- mesh node and backhaul status;
+- current and historical access point or mesh node, AP location/name, and wired or wireless backhaul status;
 - client isolation, guest-network placement, multicast/discovery controls;
 - fast-roaming and minimum-RSSI settings;
 - AP retry/drop/load statistics when available.

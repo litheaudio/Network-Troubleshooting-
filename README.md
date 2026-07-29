@@ -7,11 +7,11 @@ Customers can choose guided self-service or supervised support. In supervised su
 ## Key features
 
 - Opens as a friendly Lithe Audio support conversation rather than a sample checklist.
-- Asks one easy question at a time and uses selectable choices when the Codex surface supports them.
-- Collects the symptom, timing, affected speakers, IP address, home layout, router details, and previous fixes through an adaptive interview.
+- Requests the affected speaker IP, asks exactly five essential diagnostic questions, then starts real tests without extending the intake.
+- Includes router, mesh, extender and serving access-point details, including location, band and backhaul when known.
 - Checks one customer-provided private speaker IP address.
 - Measures reachability, packet loss, minimum/average/maximum latency, and safe TCP response.
-- Analyses customer-authorised speaker and router logs for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, and discovery evidence.
+- Analyses customer-authorised speaker and router logs locally for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, access-point and discovery evidence.
 - Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
 - Detects likely DHCP, VPN-routing, weak-signal, interference, roaming, access-point, and client-isolation problems.
 - Asks about distance, walls, floors, brick, concrete, metal, cabinets, router placement, mesh nodes, and wireless backhaul.
@@ -54,7 +54,7 @@ No third-party Python packages are required by the diagnostic scripts.
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
-Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.3.1.zip](lithe-speaker-network-check-plugin-v1.3.1.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.4.0.zip](lithe-speaker-network-check-plugin-v1.4.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
 Some Codex and ChatGPT installation screens insert this platform-owned draft:
 
@@ -72,7 +72,7 @@ The customer may send the draft as shown. The skill recognises it as a first-run
 Start my live Lithe Audio speaker and network support session.
 ```
 
-After the message is sent, the first response greets the customer as their Lithe Audio helper and asks what issue they are experiencing.
+After the message is sent, the first response greets the customer as their Lithe Audio helper and asks for the affected speaker IP. It then asks exactly five diagnostic questions before running the target-only checks.
 
 There are no API keys or Lithe Audio account credentials to enter.
 
@@ -87,7 +87,7 @@ Start a new Codex task after installing or updating the plugin.
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.2.2.zip](diagnose-lithe-speaker-network-v1.2.2.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
+The standalone [diagnose-lithe-speaker-network-v1.3.0.zip](diagnose-lithe-speaker-network-v1.3.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -112,7 +112,7 @@ Use $diagnose-lithe-speaker-network to help me with a Lithe Audio
 speaker problem as a friendly support specialist.
 ```
 
-The skill starts a live support conversation, asks what is happening, and helps the customer find the speaker IP in **Lithe Audio app > Settings > affected speaker > device or network information**.
+The skill starts a live support conversation and helps the customer find the speaker IP in **Lithe Audio app > Settings > affected speaker > device or network information**. Once the IP is validated, it asks exactly five questions covering the symptom, timing, affected devices, router/access-point path and physical Wi-Fi path. It then runs real measurements.
 
 If the IP is already known:
 
@@ -203,6 +203,19 @@ python scripts/check_speaker_network.py 192.168.1.45 \
 ```
 
 The script refuses to overwrite an existing saved diagnostic.
+
+## Analyse an authorised speaker log
+
+After exporting an official speaker support log or obtaining a customer-authorised router log, run:
+
+```bash
+python scripts/analyze_speaker_logs.py speaker.log \
+  --failure-time "2026-07-29 14:30:00" \
+  --timezone "Europe/London" \
+  --json
+```
+
+The analyser reads local files only. It emits redacted event-category counts and timestamps for DHCP, Wi-Fi disconnects, timeouts/loss, gateway failures, reboots, discovery problems, roaming and access-point changes. It never uploads the log and does not automatically claim that an event is the root cause.
 
 ## Create a redacted support report
 
@@ -296,10 +309,13 @@ diagnose-lithe-speaker-network/
 │   └── openai.yaml
 ├── references/
 │   ├── privacy-and-safety.md
+│   ├── customer-conversation.md
 │   ├── remediation.md
+│   ├── speaker-log-analysis.md
 │   ├── supervised-support.md
 │   └── support-log.md
 └── scripts/
+    ├── analyze_speaker_logs.py
     ├── check_speaker_network.py
     └── create_support_report.py
 ```
