@@ -64,7 +64,7 @@ If Lithe Audio shared the skill through a Codex workspace, open **Plugins**, sel
 
 ### If you received a skill file
 
-If Lithe Audio sent you a skill file instead of an installation link, download [diagnose-lithe-speaker-network-v1.2.0.zip](diagnose-lithe-speaker-network-v1.2.0.zip), then:
+If Lithe Audio sent you a skill file instead of an installation link, download [diagnose-lithe-speaker-network-v1.2.1.zip](diagnose-lithe-speaker-network-v1.2.1.zip), then:
 
 1. Open **Plugins** in Codex.
 2. Select the **Skills** tab.
