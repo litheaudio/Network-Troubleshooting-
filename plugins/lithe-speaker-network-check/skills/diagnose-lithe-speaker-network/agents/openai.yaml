@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lithe Speaker Network Check"
+  short_description: "Friendly live speaker and network support"
+  default_prompt: "Use $diagnose-lithe-speaker-network to start a real customer support session now; do not make up or demonstrate an example, greet me as my Lithe Audio helper, ask how I am, then ask my issue using selectable choices."

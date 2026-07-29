@@ -50,28 +50,36 @@ No third-party Python packages are required by the diagnostic scripts.
 
 ## Installation
 
-### Install the skill in Codex
+### Recommended: install the Lithe Audio plugin
 
-The normal customer installation method is:
+Use the plugin package when customers will select **Try in chat**. The plugin contains the diagnostic skill and controls the chat starter so it opens a real support session instead of asking Codex to invent an example.
 
-1. Open the Lithe Speaker Network Check skill in Codex using the link supplied by Lithe Audio.
-2. Select **Install**.
-3. Start a new Codex task.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.3.0.zip](lithe-speaker-network-check-plugin-v1.3.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
-That is all most customers need to do. There are no API keys or Lithe Audio account credentials to enter.
+The starter prompt is:
 
-If Lithe Audio shared the skill through a Codex workspace, open **Plugins**, select the **Skills** tab, find the shared skill and select **Install** from its menu.
+```text
+Start my live Lithe Audio speaker and network support session.
+```
 
-### If you received a skill file
+The first response greets the customer as their Lithe Audio helper and asks what issue they are experiencing.
 
-If Lithe Audio sent you a skill file instead of an installation link, download [diagnose-lithe-speaker-network-v1.2.1.zip](diagnose-lithe-speaker-network-v1.2.1.zip), then:
+There are no API keys or Lithe Audio account credentials to enter.
 
-1. Open **Plugins** in Codex.
-2. Select the **Skills** tab.
-3. Select **Create**, then **Upload from your computer**.
-4. Choose the Lithe Audio skill file and complete the installation.
+For local development from this repository:
 
-If **Install**, **Skills** or **Upload** is unavailable, ask the Codex workspace administrator to enable Skills and skill installation.
+```text
+codex plugin marketplace add <path-to-this-repository>
+codex plugin add lithe-speaker-network-check@lithe-audio
+```
+
+Start a new Codex task after installing or updating the plugin.
+
+### Standalone skill fallback
+
+The standalone [diagnose-lithe-speaker-network-v1.2.1.zip](diagnose-lithe-speaker-network-v1.2.1.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same, but the surrounding product may supply its own generic **Try in chat** prompt. Use the plugin package when the opening prompt must be controlled.
+
+If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
 ## Find the speaker IP address
 

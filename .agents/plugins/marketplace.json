@@ -1,0 +1,20 @@
+{
+  "name": "lithe-audio",
+  "interface": {
+    "displayName": "Lithe Audio"
+  },
+  "plugins": [
+    {
+      "name": "lithe-speaker-network-check",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lithe-speaker-network-check"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
