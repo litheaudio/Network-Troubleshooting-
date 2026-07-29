@@ -11,6 +11,8 @@ Allowed names:
 - `symptom`
 - `frequency`
 - `first_seen`
+- `last_occurrence`
+- `customer_impact`
 - `router_model`
 - `network_type`
 - `access_point`
@@ -24,7 +26,13 @@ Allowed names:
 - `barriers`
 - `speaker_location`
 - `other_devices`
+- `log_source`
+- `log_window`
+- `log_evidence`
+- `likely_cause`
+- `confidence`
 - `changes`
+- `rollback`
 - `verification`
 - `customer_notes`
 
@@ -40,6 +48,10 @@ python scripts/create_support_report.py `
   --field "walls=Two brick walls" `
   --field "barriers=TV and metal equipment cabinet" `
   --field "signal_dbm=-76" `
+  --field "log_source=Customer-provided speaker diagnostic log" `
+  --field "log_window=15 minutes around the reported dropout" `
+  --field "log_evidence=Wi-Fi disassociation aligned with the dropout" `
+  --field "confidence=Confirmed by speaker event and router client history" `
   --field "changes=Created a DHCP reservation" `
   --field "verification=20/20 replies; five-minute playback passed"
 ```
@@ -55,6 +67,8 @@ Include:
 - diagnostic timestamp and local measurements;
 - symptoms and frequency;
 - relevant physical barriers;
+- source, time window, and redacted summary of relevant log evidence;
+- whether the cause is confirmed, likely, or possible;
 - router/AP evidence;
 - exactly what changed;
 - before/after measurements;

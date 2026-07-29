@@ -13,6 +13,8 @@ Apply these rules before every diagnosis.
 - Inspect a customer-opened router page after explicit read-only permission.
 - Perform one clearly explained router change after explicit permission for that change.
 - Save a redacted local support report after the customer asks for one.
+- Analyse customer-provided speaker or router logs after permission.
+- Inspect logs exposed through an official supported interface after read-only permission.
 
 ## Prohibited
 
@@ -26,6 +28,8 @@ Apply these rules before every diagnosis.
 - Do not ask the customer to type credentials into chat or reveal them aloud.
 - Do not read, copy, store, photograph, log, or transmit passwords, MFA codes, tokens, cookies, or recovery codes.
 - Do not authenticate to a proprietary speaker endpoint.
+- Do not discover, call, or document a hidden or undocumented speaker log endpoint.
+- Do not retain or reproduce complete raw logs when a redacted event summary is sufficient.
 - Do not use an authenticated router session beyond the agreed speaker-network diagnosis.
 - Do not enable remote administration, port forwarding, WAN exposure, or a disabled firewall.
 - Do not control unrelated applications, files, accounts, cameras, microphones, or devices.
@@ -50,9 +54,10 @@ Read-only target checks can run when the customer asks to diagnose the supplied 
 Use separate consent checkpoints:
 
 1. Ask before saving a local support log.
-2. Ask before inspecting an authenticated router browser session.
-3. Ask again immediately before each settings change.
-4. Ask before restarting an access point, router, or speaker.
+2. Ask before opening or analysing customer-provided device or router logs.
+3. Ask before inspecting an authenticated router browser session.
+4. Ask again immediately before each settings change.
+5. Ask before restarting an access point, router, or speaker.
 
 Explain expected reconnections and a rollback method before a change. The customer can say **stop** at any time; stop browser or computer control immediately when asked.
 

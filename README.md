@@ -6,14 +6,20 @@ Customers can choose guided self-service or supervised support. In supervised su
 
 ## Key features
 
+- Opens as a friendly Lithe Audio support conversation rather than a sample checklist.
+- Asks one easy question at a time and uses selectable choices when the Codex surface supports them.
+- Collects the symptom, timing, affected speakers, IP address, home layout, router details, and previous fixes through an adaptive interview.
 - Checks one customer-provided private speaker IP address.
 - Measures reachability, packet loss, minimum/average/maximum latency, and safe TCP response.
+- Analyses customer-authorised speaker and router logs for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, and discovery evidence.
+- Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
 - Detects likely DHCP, VPN-routing, weak-signal, interference, roaming, access-point, and client-isolation problems.
 - Asks about distance, walls, floors, brick, concrete, metal, cabinets, router placement, mesh nodes, and wireless backhaul.
 - Provides plain-language, step-by-step fixes.
 - Supports supervised router inspection when browser or computer-control tools are available.
 - Requests separate permission before inspection, each settings change, and each restart.
 - Creates a redacted local Markdown report for support.
+- Retests after every approved change and loops back according to the customer's feedback: resolved, improved, unchanged, or worse.
 - Uses Python's standard library only.
 
 ## Privacy and safety
@@ -58,7 +64,7 @@ If Lithe Audio shared the skill through a Codex workspace, open **Plugins**, sel
 
 ### If you received a skill file
 
-If Lithe Audio sent you a skill file instead of an installation link:
+If Lithe Audio sent you a skill file instead of an installation link, download [diagnose-lithe-speaker-network-v1.2.0.zip](diagnose-lithe-speaker-network-v1.2.0.zip), then:
 
 1. Open **Plugins** in Codex.
 2. Select the **Skills** tab.
@@ -84,19 +90,17 @@ The computer running Codex must be connected to the same home network. Disconnec
 Start a Codex task with:
 
 ```text
-Use $diagnose-lithe-speaker-network to check my Lithe Audio speaker
-at 192.168.1.45 and guide me through fixing any problems.
+Use $diagnose-lithe-speaker-network to help me with a Lithe Audio
+speaker problem as a friendly support specialist.
 ```
 
-Replace the example IP with the address shown in the Lithe Audio app.
+The skill starts a live support conversation, asks what is happening, and helps the customer find the speaker IP in **Lithe Audio app > Settings > affected speaker > device or network information**.
 
-For a customer who is unsure:
+If the IP is already known:
 
 ```text
-Use $diagnose-lithe-speaker-network to diagnose my speaker at
-192.168.1.45. I am unsure how to fix it. Ask about my home Wi-Fi,
-offer supervised router support, make only changes I approve, and
-create a redacted support report.
+Use $diagnose-lithe-speaker-network to help with my speaker at
+192.168.1.45. It drops out about once a week.
 ```
 
 The skill offers two modes:

@@ -38,8 +38,11 @@ Inspect only what is relevant:
 - client isolation, guest-network placement, multicast/discovery controls;
 - fast-roaming and minimum-RSSI settings;
 - AP retry/drop/load statistics when available.
+- customer-authorised event or diagnostic logs exposed by an official supported interface.
 
 Do not export the router configuration or enumerate unrelated clients. If the router client list is needed to find the supplied IP, look only for that address and avoid recording other device details.
+
+If a log view is available, restrict inspection to the affected speaker and the smallest time window around the reported fault. Follow [speaker-log-analysis.md](speaker-log-analysis.md) and record only redacted event summaries.
 
 ## 4. Explain the diagnosis
 

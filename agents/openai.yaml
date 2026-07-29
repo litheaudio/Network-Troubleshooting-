@@ -1,4 +1,4 @@
 interface:
   display_name: "Lithe Speaker Network Check"
-  short_description: "Diagnose, guide fixes, or supervise router support"
-  default_prompt: "Use $diagnose-lithe-speaker-network to diagnose my speaker, ask about my home Wi-Fi environment, and offer guided or supervised router support with a redacted support log."
+  short_description: "Friendly live speaker and network support"
+  default_prompt: "Use $diagnose-lithe-speaker-network to help me with a Lithe Audio speaker problem as a friendly support specialist, asking one easy question at a time."

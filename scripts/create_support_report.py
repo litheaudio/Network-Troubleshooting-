@@ -18,6 +18,8 @@ ALLOWED_FIELDS = {
     "symptom": "Reported symptom",
     "frequency": "Frequency",
     "first_seen": "First noticed",
+    "last_occurrence": "Last occurrence",
+    "customer_impact": "Customer impact",
     "router_model": "Router or mesh model",
     "network_type": "Network type",
     "access_point": "Connected access point",
@@ -31,7 +33,13 @@ ALLOWED_FIELDS = {
     "barriers": "Other barriers",
     "speaker_location": "Speaker location",
     "other_devices": "Other affected devices",
+    "log_source": "Log source",
+    "log_window": "Relevant log window",
+    "log_evidence": "Redacted log evidence",
+    "likely_cause": "Likely cause",
+    "confidence": "Diagnostic confidence",
     "changes": "Changes tried",
+    "rollback": "Rollback",
     "verification": "Verification outcome",
     "customer_notes": "Customer notes",
 }
@@ -124,7 +132,15 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
         "## Customer-reported issue",
         "",
     ]
-    issue_order = ["symptom", "frequency", "first_seen", "other_devices", "customer_notes"]
+    issue_order = [
+        "symptom",
+        "customer_impact",
+        "frequency",
+        "first_seen",
+        "last_occurrence",
+        "other_devices",
+        "customer_notes",
+    ]
     for key in issue_order:
         if key in fields:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
@@ -172,8 +188,19 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
         if key in fields:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
 
+    sections.extend(["", "## Correlated log evidence", ""])
+    for key in [
+        "log_source",
+        "log_window",
+        "log_evidence",
+        "likely_cause",
+        "confidence",
+    ]:
+        if key in fields:
+            sections.append(line(ALLOWED_FIELDS[key], fields[key]))
+
     sections.extend(["", "## Actions and verification", ""])
-    for key in ["changes", "verification"]:
+    for key in ["changes", "rollback", "verification"]:
         if key in fields:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
 
