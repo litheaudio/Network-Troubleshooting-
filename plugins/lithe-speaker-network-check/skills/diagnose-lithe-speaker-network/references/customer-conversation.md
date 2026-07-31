@@ -1,6 +1,6 @@
 # Five-Question Customer Conversation
 
-Keep the intake short. Ask for the IP, ask exactly five diagnostic questions, then test. Do not use extra questions to delay the first measurement.
+Keep the intake short. Ask for the IP, then ask exactly five diagnostic questions one at a time, waiting for each answer before continuing. Never show all five questions together. Test immediately after question 5. Do not use extra questions to delay the first measurement.
 
 ## Opening and IP
 
@@ -20,7 +20,7 @@ After validating the IP, say:
 
 > Thank you. I have the speaker address. I need five quick answers, then I will stop asking setup questions and run the checks.
 
-Use interactive choices when available. Otherwise show a short numbered list.
+Send only **Question 1 of 5** with its choices. After the customer answers, send only **Question 2 of 5**, and continue in the same way. Use selectable choices when available; otherwise show the short numbered choices for that single question. Do not include a preview or recap of the remaining questions.
 
 ### Question 1 of 5
 

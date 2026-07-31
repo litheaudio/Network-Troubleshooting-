@@ -65,7 +65,7 @@ After Codex confirms installation, start a new task and type:
 Help me diagnose my Lithe Audio speaker.
 ```
 
-Codex will start the real customer-support workflow, ask for the affected speaker's private IP address and then ask five short diagnostic questions before running the checks.
+Codex will start the real customer-support workflow, ask for the affected speaker's private IP address and then ask five short diagnostic questions one at a time before running the checks.
 
 ### Alternative: install the Lithe Audio plugin
 
@@ -89,7 +89,7 @@ The customer may send the draft as shown. The skill recognises it as a first-run
 Start my live Lithe Audio speaker and network support session.
 ```
 
-After the message is sent, the first response greets the customer as their Lithe Audio helper and asks for the affected speaker IP. It then asks exactly five diagnostic questions before running the target-only checks.
+After the message is sent, the first response greets the customer as their Lithe Audio helper and asks for the affected speaker IP. It then asks exactly five diagnostic questions one at a time, waiting for each answer before running the target-only checks.
 
 There are no API keys or Lithe Audio account credentials to enter.
 
