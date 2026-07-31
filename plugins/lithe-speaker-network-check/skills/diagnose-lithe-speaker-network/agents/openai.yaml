@@ -1,4 +1,4 @@
 interface:
   display_name: "Lithe Speaker Network Check"
   short_description: "Deep service checks and recovery-log diagnosis"
-  default_prompt: "Use $diagnose-lithe-speaker-network for my real speaker issue. Ask the five intake questions one at a time, then run target-only checks, use approved logs, and preserve the failure timestamp before any authorised recovery restart."
+  default_prompt: "Use $diagnose-lithe-speaker-network for my real speaker issue. Ask Question 1 only and end your response. Wait for each answer before asking the next question; never show all five together. Then run target-only checks, use approved logs, and preserve the failure timestamp before any authorised recovery restart."

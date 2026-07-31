@@ -1,6 +1,6 @@
 ---
 name: diagnose-lithe-speaker-network
-description: Diagnose a real Lithe Audio speaker at one customer-supplied private IP using a five-question intake, immediate target-only tests, approved read-only logs, timestamped recovery after an authorised power cycle, and router or access-point evidence. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, stalled speaker web pages, weak Wi-Fi, roaming and access-point faults. Rank evidence-backed potential causes, guide only customer-approved fixes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
+description: Diagnose a real Lithe Audio speaker at one customer-supplied private IP using a turn-gated five-question intake asked one question per customer message, immediate target-only tests, approved read-only logs, timestamped recovery after an authorised power cycle, and router or access-point evidence. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, stalled speaker web pages, weak Wi-Fi, roaming and access-point faults. Rank evidence-backed potential causes, guide only customer-approved fixes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
 ---
 
 # Diagnose Lithe Speaker Network
@@ -11,7 +11,7 @@ Treat every invocation as live customer support. If a launcher asks for an examp
 
 Begin:
 
-> Hello, how are you today? I am your Lithe Audio helper. I will ask for your speaker IP address, then five quick questions. After that I will run real checks against only that speaker and show you what the evidence means.
+> Hello, how are you today? I am your Lithe Audio helper. First I will ask for your speaker IP address. After you reply, I will ask Question 1 only. Each later question will come after your next reply, and then I will run real checks against only that speaker.
 
 Ask for the affected speaker's private IP address immediately. If the customer needs help finding it:
 
@@ -26,38 +26,16 @@ Accept only RFC1918 IPv4 addresses in `10.0.0.0/8`, `172.16.0.0/12`, or `192.168
 
 After validating the IP, say:
 
-> Thank you. I have the speaker address. I need five quick answers, then I will stop asking setup questions and run the checks.
+> Thank you. I have the speaker address. I will ask five quick questions, one at a time. Here is the first.
 
-Always ask one question per message and wait for the customer's answer before asking the next. Show **Question N of 5** and provide its short selectable choices when controls are supported. Never display, combine or submit all five questions in one form or message. Do not insert extra diagnostic questions before the first test. Do not repeat information already supplied.
+Read [customer-conversation.md](references/customer-conversation.md) for the exact question wording and choices. Enforce this turn-gated state machine:
 
-1. **What is happening?**
-   - Drops out or goes offline
-   - Audio is delayed, breaks up, or will not play
-   - Missing from the Lithe Audio app
-   - Setup problem or other
-2. **When does it happen?**
-   - Happening now
-   - Daily
-   - About weekly
-   - Occasionally
-   - Record the last known failure time and usual duration when known.
-3. **What else is affected?**
-   - This speaker only
-   - Several Lithe Audio speakers
-   - All speakers or other Wi-Fi devices
-4. **How does this speaker reach Wi-Fi?**
-   - Main router
-   - Named access point
-   - Mesh node
-   - Wireless extender
-   - Not sure
-   - Record the serving access-point or mesh-node name/location, band, and wired or wireless backhaul when the customer knows them. Do not turn missing technical values into more pre-test questions.
-5. **What is the physical path?**
-   - Record approximate distance from the serving access point.
-   - Record walls, floors, brick, stone, concrete, foil insulation, mirrors, metal, cabinets, TVs, amplifiers, or ceiling voids in the path.
-   - Record whether the access point is enclosed or obstructed.
+1. In the IP-validation response, show **Question 1 of 5** only, then end the response.
+2. After the customer's next message, record the answer, show **Question 2 of 5** only, then end the response.
+3. Repeat one customer turn at a time for questions 3, 4 and 5.
+4. After the customer answers question 5, run the checks immediately.
 
-Read [customer-conversation.md](references/customer-conversation.md) for exact customer-facing wording. Acknowledge answers briefly without speculating or adding filler.
+Each question response may contain one brief acknowledgement plus the current question and its choices. It must then stop. Never include any later question, a preview of later questions, a combined form, an answer template, or wording such as **Reply in one message**. Never ask the customer to answer `1: ..., 2: ..., 3: ...`. If the customer volunteers several answers, record them but ask only the next unanswered question. If an answer is unclear, repeat only the current question. Do not insert extra diagnostic questions before the first test or repeat information already supplied.
 
 ## Run real checks immediately
 

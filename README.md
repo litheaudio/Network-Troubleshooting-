@@ -102,6 +102,8 @@ codex plugin add lithe-speaker-network-check@lithe-audio
 
 Start a new Codex task after installing or updating the plugin.
 
+If an older installation still shows all five questions together, remove the existing skill or plugin from Codex, install the current version again, and start a new task. Already-open tasks may retain the earlier skill instructions.
+
 ### Standalone skill fallback
 
 The standalone [diagnose-lithe-speaker-network-v1.3.0.zip](diagnose-lithe-speaker-network-v1.3.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
