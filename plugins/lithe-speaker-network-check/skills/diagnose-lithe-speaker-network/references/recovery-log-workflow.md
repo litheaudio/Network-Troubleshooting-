@@ -32,9 +32,9 @@ If none is available, state that the restart is a recovery step and may reduce d
 3. Run the 20-ping check and record the recovered measurements.
 4. Open `http://<supplied-private-IP>/` through the browser. Do not assume HTTPS when port 443 does not respond.
 5. Use only the visible official interface. Click **Generate Log** or its clearly equivalent visible control; do not guess a download URL.
-6. Check the browser's download bubble, tray and security prompt before deciding that generation failed.
-7. If Chrome asks **Keep** or **Discard** because the local speaker uses HTTP, tell the customer that the file came from the exact private speaker address they supplied and ask them to choose personally. Do not click through a dangerous, suspicious or malware warning on their behalf.
-8. Wait for the download to finish and verify that a new file exists. Inspect only the expected recent log file; do not enumerate or expose unrelated downloads.
+6. Pause and tell the customer: **"Please open Chrome Downloads using the Downloads button at the top right, or press Ctrl+J. Find the speaker log. If Chrome shows Keep or Discard for this local download, click Keep, then tell me when it says the download is complete."**
+7. Wait for the customer to reply **Kept** or **No Keep option shown**. Do not continue to file inspection while the download decision is pending. If Chrome describes the file as dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
+8. After the customer's confirmation, wait for the download to finish and verify that a new file exists. Inspect only the expected recent log file; do not enumerate or expose unrelated downloads.
 9. If the page returns to **Generate Log** but no file appears, check once more for a hidden or pending browser download prompt. Do not label the speaker's log generator faulty until the prompt state is resolved.
 10. Analyse the downloaded file with `scripts/analyze_speaker_logs.py`, passing the pre-restart failure timestamp and local timezone.
 11. Confirm whether `failure_time_covered` is `true` before correlating an event with the failure.

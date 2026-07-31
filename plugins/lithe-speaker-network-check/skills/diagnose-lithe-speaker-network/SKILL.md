@@ -108,6 +108,8 @@ For option 1:
 
 Do not guess or discover hidden log endpoints. If no supported log source is available, use option 2 and ask the customer to export the official support log. For recurring faults, offer a target-only timestamped monitor without presenting it as internal speaker logging.
 
+Immediately after using the visible **Generate Log** control in Chrome, pause and ask the customer to open **Chrome Downloads** using the Downloads button at the top right (or `Ctrl+J`). Ask them to find the speaker log and click **Keep** if Chrome shows the normal local-HTTP **Keep / Discard** prompt. Wait for the customer to confirm **Kept** or **No Keep option shown** before checking for or analysing the file. If Chrome calls the file dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
+
 If the speaker is reachable but its official page or **Generate Log** control times out, is incomplete, or cannot download a log, read and follow [recovery-log-workflow.md](references/recovery-log-workflow.md). Preserve the pre-restart failure timestamp, obtain separate restart permission, retry the visible log control after recovery, check the browser's Keep/Discard or blocked-download prompt, and verify that the exported log actually covers the failure time.
 
 Analyse an exported log locally:
