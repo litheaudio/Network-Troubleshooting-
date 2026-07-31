@@ -1,6 +1,6 @@
 # Speaker, Router and Access-Point Evidence
 
-Use only customer-authorised logs, official supported interfaces and the supplied private speaker IP. Do not probe hidden endpoints or expose proprietary details.
+Use only customer-authorised logs, an approved Lithe support-log connector, official supported interfaces and the supplied private speaker IP. Do not probe hidden endpoints or expose proprietary details. Read [official-log-connector.md](official-log-connector.md) when a connector is available.
 
 ## Acquire evidence
 
@@ -36,6 +36,7 @@ The analyser:
 - emits category counts and timestamps rather than raw lines;
 - identifies DHCP, Wi-Fi disconnect, timeout/loss, route/gateway, reboot/watchdog, discovery and roaming/AP-change patterns;
 - separates events inside the selected failure window from unrelated history;
+- reports the earliest and latest usable log timestamps and whether they cover the supplied failure time;
 - does not declare a root cause automatically.
 
 ## Correlate evidence
@@ -63,6 +64,8 @@ Use **Likely** when at least two independent observations align. Use **Possible*
 
 Do not call startup messages, old warnings, one timeout outside the failure window or a clean short sample a smoking gun.
 
+When a log is generated after a power cycle, require `failure_time_covered: true` before using it to explain the pre-restart fault. If coverage is false, use the log only as recovery evidence.
+
 ## Customer result
 
 Report:
@@ -70,8 +73,8 @@ Report:
 1. measured live loss and latency;
 2. the shortest redacted event summary;
 3. serving access-point evidence;
-4. confidence;
-5. one next proof;
+4. up to three ranked potential causes, each labelled Confirmed, Likely or Possible;
+5. the evidence and one next proof for each cause;
 6. one smallest reversible fix.
 
 Never paste complete logs, credentials, public IPs, full MAC addresses, unrelated clients or internal paths into chat or a support report.

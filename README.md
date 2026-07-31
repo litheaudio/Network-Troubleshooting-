@@ -50,7 +50,24 @@ No third-party Python packages are required by the diagnostic scripts.
 
 ## Installation
 
-### Recommended: install the Lithe Audio plugin
+### Recommended: install directly in Codex
+
+Open a new Codex task and type:
+
+```text
+Use $skill-installer to install the skill from:
+https://github.com/litheaudio/Network-Troubleshooting-/tree/main/plugins/lithe-speaker-network-check/skills/diagnose-lithe-speaker-network
+```
+
+After Codex confirms installation, start a new task and type:
+
+```text
+Help me diagnose my Lithe Audio speaker.
+```
+
+Codex will start the real customer-support workflow, ask for the affected speaker's private IP address and then ask five short diagnostic questions before running the checks.
+
+### Alternative: install the Lithe Audio plugin
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 

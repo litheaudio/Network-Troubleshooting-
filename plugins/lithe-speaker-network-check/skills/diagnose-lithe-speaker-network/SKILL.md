@@ -1,6 +1,6 @@
 ---
 name: diagnose-lithe-speaker-network
-description: Diagnose a real Lithe Audio speaker at one customer-supplied private IP using a five-question intake, immediate target-only reachability, packet-loss and latency tests, authorised speaker-log analysis, and read-only router or access-point evidence. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, weak Wi-Fi, roaming and access-point faults. Guide or perform only customer-approved fixes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
+description: Diagnose a real Lithe Audio speaker at one customer-supplied private IP using a five-question intake, immediate target-only tests, approved read-only logs, timestamped recovery after an authorised power cycle, and router or access-point evidence. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, stalled speaker web pages, weak Wi-Fi, roaming and access-point faults. Rank evidence-backed potential causes, guide only customer-approved fixes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
 ---
 
 # Diagnose Lithe Speaker Network
@@ -92,6 +92,8 @@ Never claim a test ran unless tool output proves it ran. Report:
 
 A healthy short test proves only that the IP path was healthy during the sample. For a weekly fault, continue to timestamped logs and DHCP/AP history.
 
+When the speaker is reachable but AirPlay, Spotify, the Lithe app and the visible web page disagree, offer one deeper read-only checkpoint. After permission, read [service-health.md](references/service-health.md) and run `scripts/check_speaker_services.py` against the supplied IP. Use it to separate network reachability from a stalled service. Do not describe service-port evidence as internal logs.
+
 ## Inspect logs and access-point evidence
 
 After the local test, present the measurements in one short paragraph. Then ask one permission checkpoint:
@@ -100,18 +102,24 @@ After the local test, present the measurements in one short paragraph. Then ask 
 
 Offer:
 
-1. **Inspect read-only evidence**
+1. **Check approved logs and network evidence**
 2. **Guide me to export the logs**
 3. **Skip logs and show the current result**
 
 For option 1:
 
-1. Use an available browser or computer-control tool.
-2. Open only the customer-approved official speaker or router interface.
-3. Let the customer type credentials and complete MFA personally.
-4. Locate the supplied IP directly; do not enumerate or record unrelated clients.
-5. Inspect the smallest useful window around the reported failure.
-6. Collect, when available:
+1. Read [official-log-connector.md](references/official-log-connector.md).
+2. Check whether an approved Lithe support-log connector is available as a callable tool. Never invent or search for an endpoint.
+3. If available, explain the read-only scope and ask permission to retrieve logs for this speaker and the smallest useful failure window.
+4. Let the customer authenticate through the connector's official flow. Never request or handle a password, token, cookie or MFA code in chat.
+5. Query only the affected speaker and time window. Request diagnostic/event data only; do not request configuration secrets or unrelated devices.
+6. Save only a redacted local export when the customer separately asks to save it. Otherwise analyse the connector response in memory and retain only the redacted findings.
+7. If no approved connector is installed, say: **"Direct Lithe support-log access is not available in this setup."** Do not imply that logs were checked. Continue immediately with the official visible interface, customer export or timed network monitor.
+8. Use an available browser or computer-control tool for the customer-approved official speaker, router or access-point interface.
+9. Let the customer type credentials and complete MFA personally.
+10. Locate the supplied IP directly; do not enumerate or record unrelated clients.
+11. Inspect the smallest useful window around the reported failure.
+12. Collect, when available:
    - DHCP lease, renewal, address-change or conflict history;
    - online/offline and reboot history;
    - current and historical serving access point or mesh node;
@@ -120,7 +128,9 @@ For option 1:
    - client isolation and discovery state;
    - official speaker event or support logs.
 
-Do not guess or discover hidden log endpoints. If no supported log view is visible, use option 2 and ask the customer to export the official support log.
+Do not guess or discover hidden log endpoints. If no supported log source is available, use option 2 and ask the customer to export the official support log. For recurring faults, offer a target-only timestamped monitor without presenting it as internal speaker logging.
+
+If the speaker is reachable but its official page or **Generate Log** control times out, is incomplete, or cannot download a log, read and follow [recovery-log-workflow.md](references/recovery-log-workflow.md). Preserve the pre-restart failure timestamp, obtain separate restart permission, retry the visible log control after recovery, check the browser's Keep/Discard or blocked-download prompt, and verify that the exported log actually covers the failure time.
 
 Analyse an exported log locally:
 
@@ -141,6 +151,10 @@ Read [speaker-log-analysis.md](references/speaker-log-analysis.md). Classify evi
 
 Do not call a lone warning a smoking gun.
 
+Before analysing any exported file, verify that it exists and its size is greater than zero. A zero-byte file means **log collection failed**; it does not mean the speaker had no events. Retry the visible **Generate Log** workflow once after a fresh customer action. If the second export is also empty or no download payload is issued, stop retrying, record the export failure and continue with the other evidence. Tell the customer plainly:
+
+> The speaker log could not provide diagnostic data. The export completed without usable content, so no conclusion has been drawn from it.
+
 ## Give the result without delay
 
 After local and available log/AP evidence, stop interviewing and present:
@@ -154,14 +168,16 @@ Measured now:
 Log and access-point evidence:
 [confirmed, likely or possible finding, or "not available"]
 
-Most likely cause:
-[one cause and confidence]
+Potential causes, ranked:
+1. [cause] - [Confirmed / Likely / Possible] - [short evidence]
+2. [only when supported by evidence]
+3. [only when supported by evidence]
 
 Next action:
 [one smallest evidence-backed action]
 ```
 
-If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
+Show no more than three potential causes. Distinguish a real log event from a network symptom and from a hypothesis. For each cause, state the next observation that would confirm or reject it. If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
 
 ## Fix and verify
 
@@ -196,13 +212,35 @@ Ask only:
 
 Do not stack unverified changes. Offer rollback first if the result is worse.
 
+## Close the customer case
+
+At the end of every completed diagnostic session, give a brief customer-facing summary containing:
+
+- the product name and firmware version when available;
+- the faults reported and their frequency;
+- the checks and improvements completed, with a short reason for each;
+- the verification result;
+- anything still outstanding, including an unavailable or zero-byte speaker log.
+
+Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
+
+Then read [support-log.md](references/support-log.md) and create an email-ready, redacted local report with `scripts/create_support_report.py`. Include the product, firmware, reported faults, completed fixes, verification, log-collection status and outstanding items. Show the report to the customer for review.
+
+Offer one closing choice:
+
+1. **Create an Outlook email with the report attached**
+2. **Keep the report on this computer**
+
+If the customer chooses email, read [email-handoff.md](references/email-handoff.md). Use an approved connected email tool only. Ask the customer to provide or confirm the exact Lithe Audio support recipient; never guess an address. Create a draft first, attach the redacted report, and show the exact recipient, subject, plain-text body and attachment name. Offer **Send**, **Edit** or **Cancel**. Send only after the customer explicitly selects **Send**. Never claim the email was sent without successful tool evidence.
+
 ## Reports and boundaries
 
-Create a report only when requested. Read [support-log.md](references/support-log.md) and use `scripts/create_support_report.py`. Keep it local for customer review.
+Keep every report local for customer review until the customer chooses to share it.
 
 Never:
 
-- expose or document internal Lithe APIs, endpoints, commands, tokens or proprietary protocols;
+- expose or document internal Lithe APIs, endpoints, commands, tokens or proprietary protocols, even when an approved connector uses them internally;
+- use a generic HTTP client or browser to guess, discover or reproduce a support-log API;
 - scan a subnet or probe any IP other than the supplied private address;
 - request, read, store or repeat credentials;
 - access unsupported or hidden speaker interfaces;

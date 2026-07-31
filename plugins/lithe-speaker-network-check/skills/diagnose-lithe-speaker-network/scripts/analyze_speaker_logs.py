@@ -168,15 +168,28 @@ def analyse_lines(
     lines: Iterable[str],
     failure_time: Optional[datetime],
     minutes: int,
-) -> tuple[int, int, dict[str, CategoryAccumulator]]:
+) -> tuple[
+    int,
+    int,
+    dict[str, CategoryAccumulator],
+    Optional[datetime],
+    Optional[datetime],
+]:
     scanned = 0
     matched_outside_window = 0
     accumulators = {category: CategoryAccumulator() for category in PATTERNS}
     default_year = failure_time.year if failure_time else datetime.now().year
+    earliest_timestamp: Optional[datetime] = None
+    latest_timestamp: Optional[datetime] = None
 
     for line in lines:
         scanned += 1
         timestamp = extract_timestamp(line, default_year)
+        if timestamp is not None:
+            if earliest_timestamp is None or timestamp < earliest_timestamp:
+                earliest_timestamp = timestamp
+            if latest_timestamp is None or timestamp > latest_timestamp:
+                latest_timestamp = timestamp
         matched_categories = [
             category for category, pattern in PATTERNS.items() if pattern.search(line)
         ]
@@ -187,7 +200,31 @@ def analyse_lines(
             continue
         for category in matched_categories:
             accumulators[category].add(timestamp)
-    return scanned, matched_outside_window, accumulators
+    return (
+        scanned,
+        matched_outside_window,
+        accumulators,
+        earliest_timestamp,
+        latest_timestamp,
+    )
+
+
+def failure_is_covered(
+    failure_time: Optional[datetime],
+    earliest_timestamp: Optional[datetime],
+    latest_timestamp: Optional[datetime],
+) -> Optional[bool]:
+    if failure_time is None or earliest_timestamp is None or latest_timestamp is None:
+        return None
+    candidate = failure_time
+    earliest = earliest_timestamp
+    latest = latest_timestamp
+    if candidate.tzinfo is not None and earliest.tzinfo is None:
+        candidate = candidate.replace(tzinfo=None)
+    elif candidate.tzinfo is None and earliest.tzinfo is not None:
+        earliest = earliest.replace(tzinfo=None)
+        latest = latest.replace(tzinfo=None)
+    return earliest <= candidate <= latest
 
 
 def iter_log_lines(paths: list[Path]) -> Iterable[str]:
@@ -253,7 +290,12 @@ def run_self_test() -> int:
         "2026-07-29 18:00:00 reboot",
         "line without a relevant event",
     ]
-    scanned, outside, accumulators = analyse_lines(sample, failure, 15)
+    scanned, outside, accumulators, earliest, latest = analyse_lines(sample, failure, 15)
+    _, _, _, post_restart_earliest, post_restart_latest = analyse_lines(
+        ["2026-07-29 14:35:00 boot sequence", "2026-07-29 14:36:00 wifi up"],
+        failure,
+        15,
+    )
     checks = [
         scanned == 5,
         outside == 1,
@@ -261,6 +303,12 @@ def run_self_test() -> int:
         accumulators["wifi_disconnect"].count == 1,
         accumulators["timeout_or_loss"].count == 1,
         accumulators["reboot_or_watchdog"].count == 0,
+        earliest == datetime.fromisoformat("2026-07-29 14:29:40"),
+        latest == datetime.fromisoformat("2026-07-29 18:00:00"),
+        failure_is_covered(failure, earliest, latest) is True,
+        failure_is_covered(
+            failure, post_restart_earliest, post_restart_latest
+        ) is False,
     ]
     if all(checks):
         print("Self-test passed.")
@@ -297,7 +345,7 @@ def main() -> int:
     except argparse.ArgumentTypeError as exc:
         parser.error(str(exc))
 
-    scanned, outside, accumulators = analyse_lines(
+    scanned, outside, accumulators, earliest, latest = analyse_lines(
         iter_log_lines(paths),
         args.failure_time,
         args.window_minutes,
@@ -313,6 +361,17 @@ def main() -> int:
         ),
         "window_minutes_each_side": args.window_minutes if args.failure_time else None,
         "lines_scanned": scanned,
+        "log_time_coverage": {
+            "earliest": (
+                earliest.isoformat(sep=" ", timespec="seconds") if earliest else None
+            ),
+            "latest": (
+                latest.isoformat(sep=" ", timespec="seconds") if latest else None
+            ),
+        },
+        "failure_time_covered": failure_is_covered(
+            args.failure_time, earliest, latest
+        ),
         "matching_lines_outside_window_or_without_timestamp": outside,
         "findings": [asdict(finding) for finding in findings],
         "interpretation": (
@@ -339,6 +398,12 @@ def main() -> int:
             f"Failure window: +/- {args.window_minutes} minutes around "
             f"{result['failure_time']} ({args.timezone})"
         )
+        if result["failure_time_covered"] is False:
+            print("Coverage: the log does not contain the supplied failure time.")
+        elif result["failure_time_covered"] is True:
+            print("Coverage: the log contains the supplied failure time.")
+        else:
+            print("Coverage: unavailable because usable log timestamps are missing.")
     if not findings:
         print("Evidence: no supported pattern found in the selected scope.")
     for finding in findings:
