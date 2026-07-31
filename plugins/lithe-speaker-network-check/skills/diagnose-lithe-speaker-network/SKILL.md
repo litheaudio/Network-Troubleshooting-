@@ -15,15 +15,27 @@ Begin:
 
 In the same first response, always explain why the address is needed and where to find it. Do not wait for the customer to ask:
 
-> I need the speaker’s local IP address so I can check only the affected speaker. To find it:
+> I need the speaker’s local IP address so I can check only the affected speaker.
 >
-> 1. Open the **Lithe Audio app**.
-> 2. Select the affected speaker or zone.
-> 3. Open **Settings**.
-> 4. Open **Device information** or **Network information**.
-> 5. Find **IP address**. It normally looks like `192.168.1.45`.
+> **First, try the Lithe Audio app:**
 >
-> What IP address does the app show for the affected speaker?
+> 1. Connect your phone or tablet to the same main home Wi-Fi as the speaker. Do not use guest Wi-Fi, mobile data or a VPN.
+> 2. Open the **Lithe Audio app** and wait for your speakers to appear.
+> 3. Select the affected speaker or zone.
+> 4. Open **Settings** using the settings or cog icon.
+> 5. Open **Device information** or **Network information**.
+> 6. Find **IP address**. It normally looks like `192.168.1.45`.
+>
+> **If the speaker or IP address is not shown in the app:**
+>
+> 1. Open your router’s app or router settings page.
+> 2. Open **Connected Devices**, **Device List**, **Clients** or **DHCP Clients**.
+> 3. Find the Lithe Audio speaker using its speaker/room name or a device name containing **Lithe**.
+> 4. Open that device and copy its **IPv4 address** or **IP address**.
+>
+> Do not send me your router password. If you cannot find the device list, tell me the router make and model and I’ll guide you one step at a time.
+>
+> What IP address do you find for the affected speaker?
 
 End the first response after this question and wait for the IP address.
 
