@@ -1,6 +1,6 @@
 ---
 name: diagnose-lithe-speaker-network
-description: Diagnose a real Lithe Audio speaker at one customer-supplied private IP using a turn-gated five-question intake asked one question per customer message, immediate target-only reachability, packet-loss and latency tests, authorised speaker-log analysis, and read-only router or access-point evidence. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, weak Wi-Fi, roaming and access-point faults. Guide or perform only customer-approved fixes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
+description: Diagnose and remediate a real Lithe Audio speaker at one customer-supplied private IP using a turn-gated five-question intake, immediate target-only tests, authorised read access to official speaker/router evidence, validated log downloads, and separately authorised write access for one reversible network change at a time. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, stalled speaker web pages, weak Wi-Fi, roaming and access-point faults. Summarise the key issues, evidence, impact, recommended fixes and reasons; action approved changes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
 ---
 
 # Diagnose Lithe Speaker Network
@@ -11,14 +11,33 @@ Treat every invocation as live customer support. If a launcher asks for an examp
 
 Begin:
 
-> Hello, how are you today? I am your Lithe Audio helper. First I will ask for your speaker IP address. After you reply, I will ask Question 1 only. Each later question will come after your next reply, and then I will run real checks against only that speaker.
+> Hello, how are you today? I am your Lithe Audio helper. I’ll ask for your speaker IP address, then five quick questions. After that, I’ll run real checks against only that speaker and explain the evidence.
 
-Ask for the affected speaker's private IP address immediately. If the customer needs help finding it:
+In the same first response, always explain why the address is needed and where to find it. Do not wait for the customer to ask:
 
-1. Open the Lithe Audio app.
-2. Select the affected speaker or zone.
-3. Open **Settings** and then device or network information.
-4. Copy the **IP address**, normally similar to `192.168.1.45`.
+> I need the speaker’s local IP address so I can check only the affected speaker.
+>
+> **First, try the Lithe Audio app:**
+>
+> 1. Connect your phone or tablet to the same main home Wi-Fi as the speaker. Do not use guest Wi-Fi, mobile data or a VPN.
+> 2. Open the **Lithe Audio app** and wait for your speakers to appear.
+> 3. Select the affected speaker or zone.
+> 4. Open **Settings** using the settings or cog icon.
+> 5. Open **Device information** or **Network information**.
+> 6. Find **IP address**. It normally looks like `192.168.1.45`.
+>
+> **If the speaker or IP address is not shown in the app:**
+>
+> 1. Open your router’s app or router settings page.
+> 2. Open **Connected Devices**, **Device List**, **Clients** or **DHCP Clients**.
+> 3. Find the Lithe Audio speaker using its speaker/room name or a device name containing **Lithe**.
+> 4. Open that device and copy its **IPv4 address** or **IP address**.
+>
+> Do not send me your router password. If you cannot find the device list, tell me the router make and model and I’ll guide you one step at a time.
+>
+> What IP address do you find for the affected speaker?
+
+End the first response after this question and wait for the IP address.
 
 Accept only RFC1918 IPv4 addresses in `10.0.0.0/8`, `172.16.0.0/12`, or `192.168.0.0/16`. Read [privacy-and-safety.md](references/privacy-and-safety.md) before testing.
 
@@ -26,11 +45,16 @@ Accept only RFC1918 IPv4 addresses in `10.0.0.0/8`, `172.16.0.0/12`, or `192.168
 
 After validating the IP, say:
 
-> Thank you. I have the speaker address. I will ask five quick questions, one at a time. Here is the first.
+> Thank you. I have the speaker address. I need five quick answers, then I’ll stop asking setup questions and run the checks.
 
-Read [customer-conversation.md](references/customer-conversation.md) for the exact wording. Show **Question 1 of 5** only and end the response. After each new customer message, show only the next unanswered question and end the response. Never include later questions, a combined form, an answer template, **Reply in one message**, or `1: ..., 2: ...` wording. Run checks only after the customer answers question 5.
+Read [customer-conversation.md](references/customer-conversation.md) for the exact question wording and choices. Enforce this turn-gated state machine:
 
-Acknowledge each answer in no more than one short sentence before asking the next single question. Do not speculate or add filler.
+1. In the IP-validation response, show **Question 1 of 5** only, then end the response.
+2. After the customer's next message, record the answer, show **Question 2 of 5** only, then end the response.
+3. Repeat one customer turn at a time for questions 3, 4 and 5.
+4. After the customer answers question 5, run the checks immediately.
+
+Each question response may contain one brief acknowledgement plus the current question and its choices. It must then stop. Never include any later question, a preview of later questions, a combined form, an answer template, or wording such as **Reply in one message**. Never ask the customer to answer `1: ..., 2: ..., 3: ...`. If the customer volunteers several answers, record them but ask only the next unanswered question. If an answer is unclear, repeat only the current question. Do not insert extra diagnostic questions before the first test or repeat information already supplied.
 
 ## Run real checks immediately
 
@@ -65,26 +89,35 @@ Never claim a test ran unless tool output proves it ran. Report:
 
 A healthy short test proves only that the IP path was healthy during the sample. For a weekly fault, continue to timestamped logs and DHCP/AP history.
 
+When the speaker is reachable but AirPlay, Spotify, the Lithe app and the visible web page disagree, offer one deeper read-only checkpoint. After permission, read [service-health.md](references/service-health.md) and run `scripts/check_speaker_services.py` against the supplied IP. Use it to separate network reachability from a stalled service. Do not describe service-port evidence as internal logs.
+
 ## Inspect logs and access-point evidence
 
-After the local test, present the measurements in one short paragraph. Then ask one permission checkpoint:
+After the local test, present the measurements in one short paragraph. Explain that **Read mode** can inspect and download relevant evidence but cannot change settings. Then ask one permission checkpoint:
 
-> The live connection test is complete. May I now inspect read-only speaker and router/access-point evidence for this IP? I will use only an official visible interface or logs you provide, and I will not change settings.
+> The live connection test is complete. May I use Read mode to inspect the affected speaker and its router/access-point evidence, and download its official support log where available? Read mode will not change any settings.
 
 Offer:
 
-1. **Inspect read-only evidence**
+1. **Inspect and download approved logs and network evidence**
 2. **Guide me to export the logs**
 3. **Skip logs and show the current result**
 
 For option 1:
 
-1. Use an available browser or computer-control tool.
-2. Open only the customer-approved official speaker or router interface.
-3. Let the customer type credentials and complete MFA personally.
-4. Locate the supplied IP directly; do not enumerate or record unrelated clients.
-5. Inspect the smallest useful window around the reported failure.
-6. Collect, when available:
+1. Read [official-log-connector.md](references/official-log-connector.md).
+2. Check whether an approved Lithe support-log connector is available as a callable tool. Never invent or search for an endpoint.
+3. If available, explain the read-only scope and ask permission to retrieve logs for this speaker and the smallest useful failure window.
+4. Let the customer authenticate through the connector's official flow. Never request or handle a password, token, cookie or MFA code in chat.
+5. Query only the affected speaker and time window. Request diagnostic/event data only; do not request configuration secrets or unrelated devices.
+6. Save only a redacted local export when the customer separately asks to save it. Otherwise analyse the connector response in memory and retain only the redacted findings.
+7. If no approved connector is installed, say: **"Direct Lithe support-log access is not available in this setup."** Do not imply that logs were checked. Continue immediately with the official visible interface, customer export or timed network monitor.
+8. Use an available browser or computer-control tool for the customer-approved official speaker, router or access-point interface. If the required tool is unavailable, say so and switch to customer-guided steps; never claim direct access.
+9. Let the customer type credentials and complete MFA personally.
+10. Locate the supplied IP directly; do not enumerate or record unrelated clients.
+11. Inspect the smallest useful window around the reported failure.
+12. Use the visible official **Generate Log**, **Download Log** or clearly equivalent control when available. Complete the Chrome Downloads/Keep checkpoint below, verify the file is new and larger than zero bytes, then analyse it locally.
+13. Collect, when available:
    - DHCP lease, renewal, address-change or conflict history;
    - online/offline and reboot history;
    - current and historical serving access point or mesh node;
@@ -93,7 +126,11 @@ For option 1:
    - client isolation and discovery state;
    - official speaker event or support logs.
 
-Do not guess or discover hidden log endpoints. If no supported log view is visible, use option 2 and ask the customer to export the official support log.
+Do not guess or discover hidden log endpoints. If no supported log source is available, use option 2 and ask the customer to export the official support log. For recurring faults, offer a target-only timestamped monitor without presenting it as internal speaker logging.
+
+Immediately after using the visible **Generate Log** control in Chrome, pause and ask the customer to open **Chrome Downloads** using the Downloads button at the top right (or `Ctrl+J`). Ask them to find the speaker log and click **Keep** if Chrome shows the normal local-HTTP **Keep / Discard** prompt. Wait for the customer to confirm **Kept** or **No Keep option shown** before checking for or analysing the file. If Chrome calls the file dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
+
+If the speaker is reachable but its official page or **Generate Log** control times out, is incomplete, or cannot download a log, read and follow [recovery-log-workflow.md](references/recovery-log-workflow.md). Preserve the pre-restart failure timestamp, obtain separate restart permission, retry the visible log control after recovery, check the browser's Keep/Discard or blocked-download prompt, and verify that the exported log actually covers the failure time.
 
 Analyse an exported log locally:
 
@@ -114,6 +151,10 @@ Read [speaker-log-analysis.md](references/speaker-log-analysis.md). Classify evi
 
 Do not call a lone warning a smoking gun.
 
+Before analysing any exported file, verify that it exists and its size is greater than zero. A zero-byte file means **log collection failed**; it does not mean the speaker had no events. Retry the visible **Generate Log** workflow once after a fresh customer action. If the second export is also empty or no download payload is issued, stop retrying, record the export failure and continue with the other evidence. Tell the customer plainly:
+
+> The speaker log could not provide diagnostic data. The export completed without usable content, so no conclusion has been drawn from it.
+
 ## Give the result without delay
 
 After local and available log/AP evidence, stop interviewing and present:
@@ -124,17 +165,22 @@ Result: [Healthy / Degraded / ICMP blocked / Unreachable]
 Measured now:
 [loss and latency measurements]
 
-Log and access-point evidence:
-[confirmed, likely or possible finding, or "not available"]
+Evidence collected:
+[speaker-log download status, time coverage and router/access-point evidence]
 
-Most likely cause:
-[one cause and confidence]
+Key issues found:
+1. [issue] - [Confirmed / Likely / Possible] - [evidence] - [customer impact]
+2. [only when supported]
+3. [only when supported]
 
-Next action:
-[one smallest evidence-backed action]
+What should be fixed and why:
+1. [exact reversible fix] - [why this addresses the evidence] - [expected benefit]
+
+Recommended next action:
+[one smallest evidence-backed action, expected interruption and rollback]
 ```
 
-If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
+Show no more than three key issues. Distinguish a real log event from a network symptom and from a hypothesis. For each issue, state what would confirm or reject it. For every proposed fix, explain why it is appropriate and what improvement is expected. If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
 
 ## Fix and verify
 
@@ -146,11 +192,23 @@ Read [remediation.md](references/remediation.md) and choose one action tied to t
 - reachable IP missing from app: correct guest/client isolation or discovery controls;
 - reboot/watchdog evidence: preserve the log and escalate before broad network changes.
 
-For router changes, read [supervised-support.md](references/supervised-support.md). Ask separate permission for:
+For router changes, read [supervised-support.md](references/supervised-support.md). Explain that **Write mode** uses an available browser or computer-control tool to apply one exact approved setting change. A request to diagnose, permission for Read mode, router login or permission to download logs is never permission to write. Ask separate permission for:
 
 1. read-only inspection;
-2. the exact proposed setting change;
+2. the exact proposed setting change, including its current value and proposed value when visible;
 3. any restart.
+
+Before requesting Write mode, show the **Key issues found** and **What should be fixed and why** overview. Then ask:
+
+> May I use Write mode to change **[exact setting]** on **[router/access point]** from **[current value]** to **[proposed value]**? This is intended to **[reason]**. Expected interruption: **[impact]**. Rollback: **[exact rollback]**.
+
+Offer:
+
+1. **Apply this exact change**
+2. **Guide me to make it myself**
+3. **Do not change anything; give me the report**
+
+Use direct browser/computer control only after option 1. Let the customer enter credentials and MFA. Read the setting back before saving, make only the approved change, save it, then read back the resulting value. Do not broaden the permission or batch other changes. If the UI, current value or save result is ambiguous, stop and ask the customer rather than guessing.
 
 Explain the change, expected interruption and rollback. Make only one change, then:
 
@@ -169,13 +227,35 @@ Ask only:
 
 Do not stack unverified changes. Offer rollback first if the result is worse.
 
+## Close the customer case
+
+At the end of every completed diagnostic session, give a brief customer-facing summary containing:
+
+- the product name and firmware version when available;
+- the faults reported and their frequency;
+- the checks and improvements completed, with a short reason for each;
+- the verification result;
+- anything still outstanding, including an unavailable or zero-byte speaker log.
+
+Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
+
+Then read [support-log.md](references/support-log.md) and create an email-ready, redacted local report with `scripts/create_support_report.py`. Include the product, firmware, reported faults, completed fixes, verification, log-collection status and outstanding items. Show the report to the customer for review.
+
+Offer one closing choice:
+
+1. **Create an Outlook email with the report attached**
+2. **Keep the report on this computer**
+
+If the customer chooses email, read [email-handoff.md](references/email-handoff.md). Use an approved connected email tool only. Ask the customer to provide or confirm the exact Lithe Audio support recipient; never guess an address. Create a draft first, attach the redacted report, and show the exact recipient, subject, plain-text body and attachment name. Offer **Send**, **Edit** or **Cancel**. Send only after the customer explicitly selects **Send**. Never claim the email was sent without successful tool evidence.
+
 ## Reports and boundaries
 
-Create a report only when requested. Read [support-log.md](references/support-log.md) and use `scripts/create_support_report.py`. Keep it local for customer review.
+Keep every report local for customer review until the customer chooses to share it.
 
 Never:
 
-- expose or document internal Lithe APIs, endpoints, commands, tokens or proprietary protocols;
+- expose or document internal Lithe APIs, endpoints, commands, tokens or proprietary protocols, even when an approved connector uses them internally;
+- use a generic HTTP client or browser to guess, discover or reproduce a support-log API;
 - scan a subnet or probe any IP other than the supplied private address;
 - request, read, store or repeat credentials;
 - access unsupported or hidden speaker interfaces;

@@ -71,10 +71,11 @@ When a log is generated after a power cycle, require `failure_time_covered: true
 Report:
 
 1. measured live loss and latency;
-2. the shortest redacted event summary;
-3. serving access-point evidence;
-4. up to three ranked potential causes, each labelled Confirmed, Likely or Possible;
-5. the evidence and one next proof for each cause;
-6. one smallest reversible fix.
+2. whether the official log was downloaded successfully, its size status and whether it covers the failure time;
+3. the shortest redacted event summary and serving access-point evidence;
+4. **Key issues found:** up to three ranked issues, each labelled Confirmed, Likely or Possible, with evidence and customer impact;
+5. the next proof that would confirm or reject each uncertain issue;
+6. **What should be fixed and why:** one smallest reversible fix, why it addresses the evidence, the expected benefit and rollback;
+7. the exact Write-mode permission checkpoint before any setting is changed.
 
 Never paste complete logs, credentials, public IPs, full MAC addresses, unrelated clients or internal paths into chat or a support report.

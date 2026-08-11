@@ -8,6 +8,8 @@ Pass fields to `scripts/create_support_report.py` as repeated `--field "name=val
 
 Allowed names:
 
+- `product_name`
+- `firmware_version`
 - `symptom`
 - `frequency`
 - `first_seen`
@@ -29,11 +31,15 @@ Allowed names:
 - `log_source`
 - `log_window`
 - `log_evidence`
+- `log_status`
 - `likely_cause`
 - `confidence`
 - `changes`
 - `rollback`
 - `verification`
+- `faults_found`
+- `fixes_completed`
+- `outstanding`
 - `customer_notes`
 
 Example:
@@ -58,10 +64,21 @@ python scripts/create_support_report.py `
 
 The script rejects unknown fields, masks full MAC addresses, redacts likely secrets and public IP addresses, and does not upload the report.
 
+## Empty or unavailable logs
+
+Check the exported file size before analysis. Treat a zero-byte file as a failed collection, never as an empty or clean log. Set:
+
+- `log_status=Failed - exported file contained zero bytes`;
+- `log_evidence=No speaker-log evidence was available`;
+- `outstanding=Speaker log export requires investigation`, unless later evidence resolves it.
+
+Retry the customer-visible export only once. Do not keep extending the session with repeated attempts.
+
 ## Support handoff
 
 Include:
 
+- product name and firmware version, when visible;
 - the affected private speaker IP;
 - masked MAC, if available;
 - diagnostic timestamp and local measurements;
@@ -74,6 +91,8 @@ Include:
 - before/after measurements;
 - verification outcome;
 - unresolved questions.
+
+Write the report so the customer can attach it directly to an email to Lithe Audio support. End it with a short customer acknowledgement and **Thank you for your time today.** State that the report was not emailed or uploaded automatically.
 
 Exclude:
 

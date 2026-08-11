@@ -11,13 +11,16 @@ Customers can choose guided self-service or supervised support. In supervised su
 - Includes router, mesh, extender and serving access-point details, including location, band and backhaul when known.
 - Checks one customer-provided private speaker IP address.
 - Measures reachability, packet loss, minimum/average/maximum latency, and safe TCP response.
+- Uses authorised Read mode to inspect the affected device, download its official support log through visible controls, verify the download, and analyse it locally.
 - Analyses customer-authorised speaker and router logs locally for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, access-point and discovery evidence.
 - Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
+- Presents a concise **Key issues found** and **What should be fixed and why** overview before proposing any change.
 - Detects likely DHCP, VPN-routing, weak-signal, interference, roaming, access-point, and client-isolation problems.
 - Asks about distance, walls, floors, brick, concrete, metal, cabinets, router placement, mesh nodes, and wireless backhaul.
 - Provides plain-language, step-by-step fixes.
-- Supports supervised router inspection when browser or computer-control tools are available.
-- Requests separate permission before inspection, each settings change, and each restart.
+- Supports supervised Read mode and separately authorised Write mode when browser or computer-control tools are available.
+- Actions one exact reversible setting change at a time, reads back the saved value, retests it, and offers rollback if the result worsens.
+- Requests separate permission before inspection, every Write-mode change, and every restart.
 - Creates a redacted local Markdown report for support.
 - Retests after every approved change and loops back according to the customer's feedback: resolved, improved, unchanged, or worse.
 - Uses Python's standard library only.
@@ -71,7 +74,7 @@ Codex will start the real customer-support workflow, ask for the affected speake
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
-Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.5.4.zip](lithe-speaker-network-check-plugin-v1.5.4.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.6.0.zip](lithe-speaker-network-check-plugin-v1.6.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
 Some Codex and ChatGPT installation screens insert this platform-owned draft:
 
@@ -106,7 +109,7 @@ If an older installation still shows all five questions together, remove the exi
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.5.4.zip](diagnose-lithe-speaker-network-v1.5.4.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
+The standalone [diagnose-lithe-speaker-network-v1.6.0.zip](diagnose-lithe-speaker-network-v1.6.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -327,15 +330,20 @@ diagnose-lithe-speaker-network/
 ├── agents/
 │   └── openai.yaml
 ├── references/
-│   ├── privacy-and-safety.md
 │   ├── customer-conversation.md
+│   ├── email-handoff.md
+│   ├── official-log-connector.md
+│   ├── privacy-and-safety.md
+│   ├── recovery-log-workflow.md
 │   ├── remediation.md
+│   ├── service-health.md
 │   ├── speaker-log-analysis.md
 │   ├── supervised-support.md
 │   └── support-log.md
 └── scripts/
     ├── analyze_speaker_logs.py
     ├── check_speaker_network.py
+    ├── check_speaker_services.py
     └── create_support_report.py
 ```
 

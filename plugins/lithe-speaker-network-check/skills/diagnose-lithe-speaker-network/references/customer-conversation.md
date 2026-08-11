@@ -116,13 +116,13 @@ Run the bundled check immediately. Do not add a readiness question, capability e
 
 ## Evidence checkpoint
 
-Give the measured loss and latency first. Then ask only for permission to inspect read-only logs and router/access-point evidence:
+Give the measured loss and latency first. Then explain Read mode and ask only for permission to inspect and download read-only logs and router/access-point evidence:
 
-1. Inspect read-only evidence
+1. Inspect and download approved evidence
 2. Guide me to export the logs
 3. Skip logs and show the current result
 
-After evidence collection, give the result and one next action. Do not restart the interview.
+After evidence collection, give **Key issues found** and **What should be fixed and why**, then propose one reversible action. Ask separately for Write mode before applying it. Do not restart the interview.
 
 ## Post-change checkpoint
 

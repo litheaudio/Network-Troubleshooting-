@@ -1,6 +1,6 @@
 ---
 name: diagnose-lithe-speaker-network
-description: Diagnose a real Lithe Audio speaker at one customer-supplied private IP using a turn-gated five-question intake asked one question per customer message, immediate target-only tests, approved read-only logs, timestamped recovery after an authorised power cycle, and router or access-point evidence. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, stalled speaker web pages, weak Wi-Fi, roaming and access-point faults. Rank evidence-backed potential causes, guide only customer-approved fixes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
+description: Diagnose and remediate a real Lithe Audio speaker at one customer-supplied private IP using a turn-gated five-question intake, immediate target-only tests, authorised read access to official speaker/router evidence, validated log downloads, and separately authorised write access for one reversible network change at a time. Use for dropouts, offline speakers, delays, app discovery failures, DHCP issues, timeouts, stalled speaker web pages, weak Wi-Fi, roaming and access-point faults. Summarise the key issues, evidence, impact, recommended fixes and reasons; action approved changes, retest them, and create a redacted support report without exposing APIs, credentials or proprietary details.
 ---
 
 # Diagnose Lithe Speaker Network
@@ -93,13 +93,13 @@ When the speaker is reachable but AirPlay, Spotify, the Lithe app and the visibl
 
 ## Inspect logs and access-point evidence
 
-After the local test, present the measurements in one short paragraph. Then ask one permission checkpoint:
+After the local test, present the measurements in one short paragraph. Explain that **Read mode** can inspect and download relevant evidence but cannot change settings. Then ask one permission checkpoint:
 
-> The live connection test is complete. May I now inspect read-only speaker and router/access-point evidence for this IP? I will use only an official visible interface or logs you provide, and I will not change settings.
+> The live connection test is complete. May I use Read mode to inspect the affected speaker and its router/access-point evidence, and download its official support log where available? Read mode will not change any settings.
 
 Offer:
 
-1. **Check approved logs and network evidence**
+1. **Inspect and download approved logs and network evidence**
 2. **Guide me to export the logs**
 3. **Skip logs and show the current result**
 
@@ -112,11 +112,12 @@ For option 1:
 5. Query only the affected speaker and time window. Request diagnostic/event data only; do not request configuration secrets or unrelated devices.
 6. Save only a redacted local export when the customer separately asks to save it. Otherwise analyse the connector response in memory and retain only the redacted findings.
 7. If no approved connector is installed, say: **"Direct Lithe support-log access is not available in this setup."** Do not imply that logs were checked. Continue immediately with the official visible interface, customer export or timed network monitor.
-8. Use an available browser or computer-control tool for the customer-approved official speaker, router or access-point interface.
+8. Use an available browser or computer-control tool for the customer-approved official speaker, router or access-point interface. If the required tool is unavailable, say so and switch to customer-guided steps; never claim direct access.
 9. Let the customer type credentials and complete MFA personally.
 10. Locate the supplied IP directly; do not enumerate or record unrelated clients.
 11. Inspect the smallest useful window around the reported failure.
-12. Collect, when available:
+12. Use the visible official **Generate Log**, **Download Log** or clearly equivalent control when available. Complete the Chrome Downloads/Keep checkpoint below, verify the file is new and larger than zero bytes, then analyse it locally.
+13. Collect, when available:
    - DHCP lease, renewal, address-change or conflict history;
    - online/offline and reboot history;
    - current and historical serving access point or mesh node;
@@ -164,19 +165,22 @@ Result: [Healthy / Degraded / ICMP blocked / Unreachable]
 Measured now:
 [loss and latency measurements]
 
-Log and access-point evidence:
-[confirmed, likely or possible finding, or "not available"]
+Evidence collected:
+[speaker-log download status, time coverage and router/access-point evidence]
 
-Potential causes, ranked:
-1. [cause] - [Confirmed / Likely / Possible] - [short evidence]
-2. [only when supported by evidence]
-3. [only when supported by evidence]
+Key issues found:
+1. [issue] - [Confirmed / Likely / Possible] - [evidence] - [customer impact]
+2. [only when supported]
+3. [only when supported]
 
-Next action:
-[one smallest evidence-backed action]
+What should be fixed and why:
+1. [exact reversible fix] - [why this addresses the evidence] - [expected benefit]
+
+Recommended next action:
+[one smallest evidence-backed action, expected interruption and rollback]
 ```
 
-Show no more than three potential causes. Distinguish a real log event from a network symptom and from a hypothesis. For each cause, state the next observation that would confirm or reject it. If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
+Show no more than three key issues. Distinguish a real log event from a network symptom and from a hypothesis. For each issue, state what would confirm or reject it. For every proposed fix, explain why it is appropriate and what improvement is expected. If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
 
 ## Fix and verify
 
@@ -188,11 +192,23 @@ Read [remediation.md](references/remediation.md) and choose one action tied to t
 - reachable IP missing from app: correct guest/client isolation or discovery controls;
 - reboot/watchdog evidence: preserve the log and escalate before broad network changes.
 
-For router changes, read [supervised-support.md](references/supervised-support.md). Ask separate permission for:
+For router changes, read [supervised-support.md](references/supervised-support.md). Explain that **Write mode** uses an available browser or computer-control tool to apply one exact approved setting change. A request to diagnose, permission for Read mode, router login or permission to download logs is never permission to write. Ask separate permission for:
 
 1. read-only inspection;
-2. the exact proposed setting change;
+2. the exact proposed setting change, including its current value and proposed value when visible;
 3. any restart.
+
+Before requesting Write mode, show the **Key issues found** and **What should be fixed and why** overview. Then ask:
+
+> May I use Write mode to change **[exact setting]** on **[router/access point]** from **[current value]** to **[proposed value]**? This is intended to **[reason]**. Expected interruption: **[impact]**. Rollback: **[exact rollback]**.
+
+Offer:
+
+1. **Apply this exact change**
+2. **Guide me to make it myself**
+3. **Do not change anything; give me the report**
+
+Use direct browser/computer control only after option 1. Let the customer enter credentials and MFA. Read the setting back before saving, make only the approved change, save it, then read back the resulting value. Do not broaden the permission or batch other changes. If the UI, current value or save result is ambiguous, stop and ask the customer rather than guessing.
 
 Explain the change, expected interruption and rollback. Make only one change, then:
 

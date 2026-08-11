@@ -15,6 +15,8 @@ from typing import Any
 
 
 ALLOWED_FIELDS = {
+    "product_name": "Product name",
+    "firmware_version": "Firmware version",
     "symptom": "Reported symptom",
     "frequency": "Frequency",
     "first_seen": "First noticed",
@@ -36,11 +38,15 @@ ALLOWED_FIELDS = {
     "log_source": "Log source",
     "log_window": "Relevant log window",
     "log_evidence": "Redacted log evidence",
+    "log_status": "Log collection status",
     "likely_cause": "Likely cause",
     "confidence": "Diagnostic confidence",
     "changes": "Changes tried",
     "rollback": "Rollback",
     "verification": "Verification outcome",
+    "faults_found": "Faults identified",
+    "fixes_completed": "Improvements completed",
+    "outstanding": "Outstanding items",
     "customer_notes": "Customer notes",
 }
 SECRET_RE = re.compile(
@@ -129,9 +135,18 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
         line("Created locally", now.isoformat(timespec="seconds")),
         line("Data handling", "Redacted local report; not uploaded by this tool"),
         "",
-        "## Customer-reported issue",
+        "## Product details",
         "",
     ]
+    for key in ["product_name", "firmware_version"]:
+        if key in fields:
+            sections.append(line(ALLOWED_FIELDS[key], fields[key]))
+
+    sections.extend([
+        "",
+        "## Customer-reported issue",
+        "",
+    ])
     issue_order = [
         "symptom",
         "customer_impact",
@@ -190,6 +205,7 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
 
     sections.extend(["", "## Correlated log evidence", ""])
     for key in [
+        "log_status",
         "log_source",
         "log_window",
         "log_evidence",
@@ -200,7 +216,14 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
 
     sections.extend(["", "## Actions and verification", ""])
-    for key in ["changes", "rollback", "verification"]:
+    for key in [
+        "faults_found",
+        "fixes_completed",
+        "changes",
+        "rollback",
+        "verification",
+        "outstanding",
+    ]:
         if key in fields:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
 
@@ -214,6 +237,12 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
             "- No public IP address or unrelated network client included.",
             "- Full MAC addresses were masked.",
             "- The report was saved locally and must be reviewed before sharing.",
+            "",
+            "## Customer handoff",
+            "",
+            "This report is ready for the customer to review and attach to an email to Lithe Audio support. It was not emailed or uploaded automatically.",
+            "",
+            "Thank you for your time today.",
             "",
         ]
     )
@@ -236,7 +265,11 @@ def run_self_test() -> int:
     }
     fields = parse_fields(
         [
+            "product_name=Lithe Audio WiFi Speaker",
+            "firmware_version=TEST.1",
             "walls=Two brick walls",
+            "log_status=Failed - exported file contained zero bytes",
+            "outstanding=Speaker log export requires investigation",
             "customer_notes=password=hunter2 public=8.8.8.8 mac=AA:BB:CC:DD:EE:FF",
         ]
     )
@@ -247,6 +280,8 @@ def run_self_test() -> int:
         "AA:BB:CC:DD:EE:FF" not in report,
         "AA:BB:CC:XX:XX:FF" in report,
         "Two brick walls" in report,
+        "Failed - exported file contained zero bytes" in report,
+        "Thank you for your time today." in report,
     ]
     if all(checks):
         print("Self-test passed.")

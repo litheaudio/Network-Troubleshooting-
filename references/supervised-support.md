@@ -1,4 +1,4 @@
-# Supervised Browser Support
+# Supervised Read and Write Support
 
 Follow this workflow when the customer asks Codex to inspect or fix the router because they are unsure.
 
@@ -10,8 +10,9 @@ Tell the customer:
 
 - control is limited to the router and affected-speaker diagnosis;
 - they can watch every action and say **stop** at any time;
-- initial inspection is read-only;
-- every settings change requires a separate confirmation;
+- **Read mode** may inspect relevant pages and download official logs but cannot change settings;
+- **Write mode** may apply only one exact change after a separate confirmation;
+- every additional settings change requires another confirmation;
 - they must type passwords and MFA codes themselves;
 - a redacted support log can be saved locally for review.
 
@@ -48,20 +49,21 @@ If a log view is available, restrict inspection to the affected speaker and the 
 
 ## 4. Explain the diagnosis
 
-State:
+Before asking to change anything, show:
 
-1. the observed evidence;
-2. the likely cause;
-3. the smallest proposed change;
-4. which devices may reconnect;
-5. how to roll back;
-6. how the result will be verified.
+1. **Key issues found:** up to three issues with confidence, evidence and customer impact;
+2. **What should be fixed and why:** the exact proposed change, the evidence it addresses and expected benefit;
+3. which devices may reconnect or be interrupted;
+4. how to roll back;
+5. how the result will be verified.
 
-Ask: **Would you like me to make this exact change now?**
+Ask: **May I use Write mode to make this exact change now?** Offer **Apply this exact change**, **Guide me**, or **No changes; report only**.
 
 Do not treat permission for one setting as permission for another.
 
 ## 5. Make one approved change
+
+Use browser or computer control only when an appropriate tool is available and option **Apply this exact change** was selected. Re-read the target page and current value before writing. Change only the named setting, save it, and confirm the value shown after saving. If no suitable control tool is available, use guided steps and do not imply that Codex applied the change.
 
 Prefer reversible actions:
 
