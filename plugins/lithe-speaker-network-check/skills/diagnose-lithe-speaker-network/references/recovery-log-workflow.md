@@ -31,13 +31,14 @@ If none is available, state that the restart is a recovery step and may reduce d
 2. Wait for the supplied IP to answer the target-only check; do not scan for a replacement address.
 3. Run the 20-ping check and record the recovered measurements.
 4. Open `http://<supplied-private-IP>/` through the browser. Do not assume HTTPS when port 443 does not respond.
-5. Retry `scripts/download_speaker_logs.py` for the validated speaker IP. If direct local access is unavailable, open only the approved local log URL derived by the skill for that same IP. Otherwise use the visible official interface and click **Generate Log** or its clearly equivalent control. Do not try another path.
+5. Retry `scripts/collect_and_analyze_speaker_logs.py` for the validated speaker IP so the raw file is deleted after analysis. If direct local access is unavailable, open only the approved local log URL derived by the skill for that same IP. Otherwise use the visible official interface and click **Generate Log** or its clearly equivalent control. Do not try another path.
 6. Pause and tell the customer: **"Please open Chrome Downloads using the Downloads button at the top right, or press Ctrl+J. Find the speaker log. If Chrome shows Keep or Discard for this local download, click Keep, then tell me when it says the download is complete."**
 7. Wait for the customer to reply **Kept** or **No Keep option shown**. Do not continue to file inspection while the download decision is pending. If Chrome describes the file as dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
 8. After the customer's confirmation, wait for the download to finish and verify that a new file exists. Inspect only the expected recent log file; do not enumerate or expose unrelated downloads.
 9. If the page returns to **Generate Log** but no file appears, check once more for a hidden or pending browser download prompt. Do not label the speaker's log generator faulty until the prompt state is resolved.
 10. Analyse the downloaded file with `scripts/analyze_speaker_logs.py`, passing the pre-restart failure timestamp and local timezone.
 11. Confirm whether `failure_time_covered` is `true` before correlating an event with the failure.
+12. Confirm `future_clock_warning` is `false`; otherwise report a clock-alignment problem and do not call any event the smoking gun.
 
 ## Browser download decisions
 

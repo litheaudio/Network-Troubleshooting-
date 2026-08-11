@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable, Optional
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 MAX_FILE_BYTES = 100 * 1024 * 1024
@@ -18,13 +19,15 @@ MAX_SAMPLE_TIMESTAMPS = 3
 
 PATTERNS: dict[str, re.Pattern[str]] = {
     "dhcp": re.compile(
-        r"\b(?:dhcp|lease|address conflict|duplicate ip)\b.*"
-        r"(?:discover|request|renew|rebind|expire|nak|conflict|duplicate|change|lost|fail)?",
+        r"(?:\b(?:dhcp|lease)\b.{0,100}\b(?:nak|conflict|duplicate|expire[ds]?|"
+        r"lost|fail(?:ed|ure)?|timeout|timed out|no offer|no ack|declined?)\b|"
+        r"\b(?:address conflict|duplicate ip|dhcp nak)\b)",
         re.IGNORECASE,
     ),
     "wifi_disconnect": re.compile(
-        r"\b(?:deauth|disassoc|disconnect|association lost|authentication fail|"
-        r"wifi.{0,20}(?:down|lost|reconnect)|reconnect.{0,20}wifi)\b",
+        r"\b(?:deauth(?:enticated)?|disassoc(?:iated)?|association lost|"
+        r"authentication fail(?:ed|ure)?|wifi.{0,20}(?:down|lost|reconnect)|"
+        r"reconnect.{0,20}wifi|wlan.{0,20}disconnect(?:ed)?)\b",
         re.IGNORECASE,
     ),
     "timeout_or_loss": re.compile(
@@ -60,6 +63,16 @@ NEXT_PROOF = {
     "reboot_or_watchdog": "Compare speaker uptime and power history before changing Wi-Fi settings.",
     "discovery": "Check guest isolation and multicast discovery while confirming IP reachability.",
     "roaming_or_ap_change": "Check AP association history, backhaul and fast-roaming settings.",
+}
+
+EVIDENCE_WEIGHT = {
+    "reboot_or_watchdog": 90,
+    "route_or_gateway": 85,
+    "wifi_disconnect": 80,
+    "dhcp": 75,
+    "roaming_or_ap_change": 65,
+    "discovery": 60,
+    "timeout_or_loss": 50,
 }
 
 TARGETED_FIX = {
@@ -119,6 +132,7 @@ class Finding:
     smoking_gun_candidate: bool
     targeted_fix: str
     why_this_fix: str
+    evidence_score: int
 
 
 @dataclass
@@ -155,6 +169,16 @@ def parse_datetime(value: str) -> datetime:
         ) from exc
 
 
+def timezone_name(value: str) -> str:
+    try:
+        ZoneInfo(value)
+    except ZoneInfoNotFoundError as exc:
+        raise argparse.ArgumentTypeError(
+            "Use an IANA timezone such as Europe/London."
+        ) from exc
+    return value
+
+
 def window_minutes(value: str) -> int:
     try:
         minutes = int(value)
@@ -167,11 +191,17 @@ def window_minutes(value: str) -> int:
 
 def extract_timestamp(line: str, default_year: int) -> Optional[datetime]:
     full = re.search(
-        r"\b(\d{4}[-/]\d{2}[-/]\d{2})[T ](\d{2}:\d{2}:\d{2}(?:\.\d+)?)",
+        r"\b(\d{4}[-/]\d{2}[-/]\d{2})[T ]"
+        r"(\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)",
         line,
     )
     if full:
         value = f"{full.group(1).replace('/', '-')} {full.group(2)}"
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
+        offset = re.search(r"([+-]\d{2})(\d{2})$", value)
+        if offset and ":" not in offset.group(0):
+            value = value[: offset.start()] + f"{offset.group(1)}:{offset.group(2)}"
         try:
             return datetime.fromisoformat(value)
         except ValueError:
@@ -205,9 +235,9 @@ def within_window(
     if timestamp is None:
         return False
     if timestamp.tzinfo is not None and failure_time.tzinfo is None:
-        timestamp = timestamp.replace(tzinfo=None)
+        failure_time = failure_time.replace(tzinfo=timestamp.tzinfo)
     elif timestamp.tzinfo is None and failure_time.tzinfo is not None:
-        failure_time = failure_time.replace(tzinfo=None)
+        timestamp = timestamp.replace(tzinfo=failure_time.tzinfo)
     return abs(timestamp - failure_time) <= timedelta(minutes=minutes)
 
 
@@ -232,6 +262,13 @@ def analyse_lines(
     for line in lines:
         scanned += 1
         timestamp = extract_timestamp(line, default_year)
+        if (
+            timestamp is not None
+            and timestamp.tzinfo is None
+            and failure_time is not None
+            and failure_time.tzinfo is not None
+        ):
+            timestamp = timestamp.replace(tzinfo=failure_time.tzinfo)
         if timestamp is not None:
             if earliest_timestamp is None or timestamp < earliest_timestamp:
                 earliest_timestamp = timestamp
@@ -267,10 +304,10 @@ def failure_is_covered(
     earliest = earliest_timestamp
     latest = latest_timestamp
     if candidate.tzinfo is not None and earliest.tzinfo is None:
-        candidate = candidate.replace(tzinfo=None)
+        earliest = earliest.replace(tzinfo=candidate.tzinfo)
+        latest = latest.replace(tzinfo=candidate.tzinfo)
     elif candidate.tzinfo is None and earliest.tzinfo is not None:
-        earliest = earliest.replace(tzinfo=None)
-        latest = latest.replace(tzinfo=None)
+        candidate = candidate.replace(tzinfo=earliest.tzinfo)
     return earliest <= candidate <= latest
 
 
@@ -282,6 +319,7 @@ def iter_log_lines(paths: list[Path]) -> Iterable[str]:
 
 def validate_paths(values: list[str]) -> list[Path]:
     paths: list[Path] = []
+    total_bytes = 0
     for value in values:
         path = Path(value).expanduser()
         if not path.is_file():
@@ -289,6 +327,11 @@ def validate_paths(values: list[str]) -> list[Path]:
         if path.stat().st_size > MAX_FILE_BYTES:
             raise argparse.ArgumentTypeError(
                 f"Log file exceeds the 100 MB local-analysis limit: {path.name}"
+            )
+        total_bytes += path.stat().st_size
+        if total_bytes > MAX_FILE_BYTES:
+            raise argparse.ArgumentTypeError(
+                "Combined logs exceed the 100 MB local-analysis limit."
             )
         paths.append(path)
     return paths
@@ -330,9 +373,11 @@ def build_findings(
                 ),
                 targeted_fix=targeted_fix,
                 why_this_fix=why_this_fix,
+                evidence_score=EVIDENCE_WEIGHT[category]
+                + min(accumulator.count, 10),
             )
         )
-    return sorted(findings, key=lambda finding: finding.event_count, reverse=True)
+    return sorted(findings, key=lambda finding: finding.evidence_score, reverse=True)
 
 
 def run_self_test() -> int:
@@ -368,6 +413,18 @@ def run_self_test() -> int:
         finding_by_category["dhcp"].smoking_gun_candidate is True,
         "DHCP reservation" in finding_by_category["dhcp"].targeted_fix,
         bool(finding_by_category["dhcp"].why_this_fix),
+        analyse_lines(
+            ["2026-07-29 14:30:00 DHCP lease renewed successfully"],
+            failure,
+            15,
+        )[2]["dhcp"].count
+        == 0,
+        analyse_lines(
+            ["2026-07-29 14:30:00 user selected disconnect menu"],
+            failure,
+            15,
+        )[2]["wifi_disconnect"].count
+        == 0,
     ]
     if all(checks):
         print("Self-test passed.")
@@ -386,7 +443,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("logs", nargs="*", help="One or more local log files")
     parser.add_argument("--failure-time", type=parse_datetime)
     parser.add_argument("--window-minutes", type=window_minutes, default=15)
-    parser.add_argument("--timezone", default="Customer local time")
+    parser.add_argument("--timezone", type=timezone_name)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     return parser
@@ -404,6 +461,11 @@ def main() -> int:
     except argparse.ArgumentTypeError as exc:
         parser.error(str(exc))
 
+    timezone_label = args.timezone or "Computer local time"
+    zone = ZoneInfo(args.timezone) if args.timezone else datetime.now().astimezone().tzinfo
+    if args.failure_time is not None and args.failure_time.tzinfo is None:
+        args.failure_time = args.failure_time.replace(tzinfo=zone)
+
     scanned, outside, accumulators, earliest, latest = analyse_lines(
         iter_log_lines(paths),
         args.failure_time,
@@ -413,7 +475,7 @@ def main() -> int:
     findings = build_findings(accumulators, args.failure_time, covered)
     result = {
         "files_analysed": [path.name for path in paths],
-        "timezone_label": args.timezone,
+        "timezone_label": timezone_label,
         "failure_time": (
             args.failure_time.isoformat(sep=" ", timespec="seconds")
             if args.failure_time
@@ -455,7 +517,7 @@ def main() -> int:
     if args.failure_time:
         print(
             f"Failure window: +/- {args.window_minutes} minutes around "
-            f"{result['failure_time']} ({args.timezone})"
+            f"{result['failure_time']} ({timezone_label})"
         )
         if result["failure_time_covered"] is False:
             print("Coverage: the log does not contain the supplied failure time.")

@@ -2,6 +2,8 @@
 
 Choose the section that matches the measured evidence. Make one change, retest, and stop when the success targets are met.
 
+Read [product-network-matrix.md](product-network-matrix.md) before any product-specific radio, addressing or discovery change. Do not infer band support or static-IP method from generic Wi-Fi advice.
+
 ## Decision Table
 
 | Finding | Likely cause | First action |
@@ -32,6 +34,8 @@ Use this first for periodic disappearances, changed addresses, or address confli
 9. Confirm the router shows the same IP after reconnection.
 
 Do not set a manual static address on the speaker unless the product documentation specifically requires it. Router-side DHCP reservation avoids duplicate addresses and is easier to manage.
+
+Do not automate speaker-side static addressing. Incorrect subnet, gateway or DNS values can make the speaker unreachable.
 
 ## Improve Weak Wi-Fi
 

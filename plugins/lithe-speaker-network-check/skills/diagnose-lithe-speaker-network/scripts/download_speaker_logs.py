@@ -12,6 +12,7 @@ import os
 import tempfile
 import urllib.error
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -133,7 +134,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("ip", nargs="?", type=private_ipv4)
-    parser.add_argument("--output", type=Path, default=Path("lithe-speaker-log.txt"))
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--timeout", type=positive_timeout, default=15.0)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--self-test", action="store_true")
@@ -187,8 +188,11 @@ def main() -> int:
         return run_self_test()
     if args.ip is None:
         parser.error("Provide the customer-supplied private speaker IP.")
+    output = args.output or Path(
+        f"lithe-speaker-log-{datetime.now().astimezone():%Y%m%d-%H%M%S}.txt"
+    )
     try:
-        result = download(args.ip, args.output, args.timeout)
+        result = download(args.ip, output, args.timeout)
     except (OSError, RuntimeError, urllib.error.URLError) as exc:
         message = {"status": "failed", "reason": str(exc), "read_only": True}
         if args.json:

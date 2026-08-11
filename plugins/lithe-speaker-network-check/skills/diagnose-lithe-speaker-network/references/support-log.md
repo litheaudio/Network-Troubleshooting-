@@ -6,6 +6,8 @@ Create a local report only after the customer asks for one. Show it for customer
 
 Pass fields to `scripts/create_support_report.py` as repeated `--field "name=value"` arguments.
 
+When redacted collector/analyser JSON exists, pass it with `--log-analysis-json`. Let the script populate log status, coverage, ranked evidence, confidence and next proof. Use explicit `--field` values only to add customer context or override a reviewed value.
+
 Allowed names:
 
 - `product_name`

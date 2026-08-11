@@ -85,7 +85,7 @@ Never claim a test ran unless tool output proves it ran. Report:
 - route warning, if any;
 - masked neighbour presence;
 - safe TCP response;
-- result: **Healthy**, **Degraded**, **ICMP blocked**, **Unreachable**, or **Route warning**.
+- result: **Healthy**, **Degraded**, **ICMP blocked**, **ICMP unavailable**, **Probe unavailable**, **Unreachable**, or **Route warning**. Never translate an unavailable measurement into an offline result.
 
 A healthy short test proves only that the IP path was healthy during the sample. For a weekly fault, continue to timestamped logs and DHCP/AP history.
 
@@ -106,14 +106,16 @@ Offer:
 For option 1:
 
 1. Read [official-log-connector.md](references/official-log-connector.md).
-2. After Read-mode permission, first try the approved target-only local speaker-log download:
+2. After Read-mode permission, first use the approved ephemeral collect-and-analyse workflow:
 
    ```powershell
-   python scripts/download_speaker_logs.py 192.168.1.45 --output lithe-speaker-log.txt --json
+   python scripts/collect_and_analyze_speaker_logs.py 192.168.1.45 `
+     --failure-time "2026-07-29 14:30:00" `
+     --timezone "Europe/London"
    ```
 
-   Replace the example with the validated customer IP. The script constructs only the approved read-only `/devcielogs.txt` path on that exact RFC1918 address. It refuses redirects, public addresses, empty responses, HTML error pages and payloads above 100 MB. It performs no scan, authentication, upload or setting change.
-3. If the direct download succeeds, verify the reported size is greater than zero and analyse the saved file locally. Do not expose the log URL in the customer-facing result; call it the **official local speaker log**.
+   Replace the example with the validated customer IP and failure time. The workflow uses only the fixed Lithe-approved read-only local log path on that exact RFC1918 address. It refuses redirects, public addresses, empty responses, HTML error pages and payloads above 100 MB. It analyses the raw log in a temporary directory and deletes it automatically. It performs no scan, authentication, upload or setting change.
+3. If collection succeeds, verify the reported size and provenance hash, confirm `raw_log_retained` is false and use only the redacted findings. Do not expose the log URL in the customer-facing result; call it the **official local speaker log**. Use `download_speaker_logs.py` only when the customer separately asks to retain the raw log.
 4. If the script cannot access the customer's LAN because of the execution environment, use an available browser/computer-control tool to open the same approved log URL for the supplied IP. Do not try spelling variations or additional paths. Complete the Chrome Downloads/Keep checkpoint before inspecting the file.
 5. If the approved local download is unavailable, check whether an approved Lithe support-log connector is available as a callable tool. Never invent or search for another endpoint.
 6. If available, explain the read-only scope and ask permission to retrieve logs for this speaker and the smallest useful failure window.
@@ -135,7 +137,18 @@ For option 1:
    - client isolation and discovery state;
    - official speaker event or support logs.
 
-Use only the approved local log path above; do not guess, enumerate or discover any other endpoint. If no supported log source is available, use option 2 and ask the customer to export the official support log. For recurring faults, offer a target-only timestamped monitor without presenting it as internal speaker logging.
+Use only the approved fixed local log source; do not guess, enumerate or discover any other endpoint. If no supported log source is available, use option 2 and ask the customer to export the official support log.
+
+For a recurring fault that the current log does not cover, ask separate permission to save target-only monitor measurements, then run:
+
+```powershell
+python scripts/monitor_speaker_network.py 192.168.1.45 `
+  --duration-minutes 1440 `
+  --interval-seconds 60 `
+  --output lithe-monitor-2026-07-29.jsonl
+```
+
+Choose 15 minutes for a live fault, 24 hours for a daily fault or an agreed period up to seven days for a weekly fault. Explain that the monitor records only timestamps, reachability, latency and the two safe TCP results for the supplied target. It is not an internal speaker log. Give the customer a stop method and do not run an unattended monitor without permission to save it.
 
 Immediately after using the visible **Generate Log** control in Chrome, pause and ask the customer to open **Chrome Downloads** using the Downloads button at the top right (or `Ctrl+J`). Ask them to find the speaker log and click **Keep** if Chrome shows the normal local-HTTP **Keep / Discard** prompt. Wait for the customer to confirm **Kept** or **No Keep option shown** before checking for or analysing the file. If Chrome calls the file dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
 
@@ -151,6 +164,8 @@ python scripts/analyze_speaker_logs.py speaker.log `
 ```
 
 Omit `--failure-time` only when the customer cannot identify a failure window. The analyser reads local files, identifies timestamped DHCP, Wi-Fi disconnect, timeout, route, reboot, discovery, roaming and channel-change patterns, and returns redacted category summaries. Each finding includes a smoking-gun-candidate flag, next proof, targeted fix and reason. It does not contact the speaker or upload logs.
+
+Treat `future_clock_warning: true` or missing failure coverage as a block on smoking-gun classification. Do not rank routine successful DHCP messages or generic user-interface words as faults. Prefer evidence severity and causal order over raw event count.
 
 Read [speaker-log-analysis.md](references/speaker-log-analysis.md). Classify evidence as:
 
@@ -169,7 +184,7 @@ Before analysing any exported file, verify that it exists and its size is greate
 After local and available log/AP evidence, stop interviewing and present:
 
 ```text
-Result: [Healthy / Degraded / ICMP blocked / Unreachable]
+Result: [Healthy / Degraded / ICMP blocked / ICMP unavailable / Probe unavailable / Unreachable / Route warning]
 
 Measured now:
 [loss and latency measurements]
@@ -201,13 +216,15 @@ Read [remediation.md](references/remediation.md) and choose one action tied to t
 - reachable IP missing from app: correct guest/client isolation or discovery controls;
 - reboot/watchdog evidence: preserve the log and escalate before broad network changes.
 
+Before a band, channel, roaming, static-IP, WMM, UPnP, IGMP or multicast change, read [product-network-matrix.md](references/product-network-matrix.md). Identify the product family and firmware from an official source. If unknown, avoid the model-specific change and state what identity evidence is missing.
+
 For router changes, read [supervised-support.md](references/supervised-support.md). Explain that **Write mode** uses an available browser or computer-control tool to apply one exact approved setting change. A request to diagnose, permission for Read mode, router login or permission to download logs is never permission to write. Ask separate permission for:
 
 1. read-only inspection;
 2. the exact proposed setting change, including its current value and proposed value when visible;
 3. any restart.
 
-Before requesting Write mode, show the **Key issues found** and **What should be fixed and why** overview. Then ask:
+Before requesting Write mode, show the **Key issues found** and **What should be fixed and why** overview. State whether the change affects only this speaker, one AP, the complete SSID or the whole LAN, including other clients likely to reconnect. Then ask:
 
 > May I use Write mode to change **[exact setting]** on **[router/access point]** from **[current value]** to **[proposed value]**? This is intended to **[reason]**. Expected interruption: **[impact]**. Rollback: **[exact rollback]**.
 
@@ -248,7 +265,9 @@ At the end of every completed diagnostic session, give a brief customer-facing s
 
 Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
 
-Then read [support-log.md](references/support-log.md) and create an email-ready, redacted local report with `scripts/create_support_report.py`. Include the product, firmware, reported faults, completed fixes, verification, log-collection status and outstanding items. Show the report to the customer for review.
+Then read [support-log.md](references/support-log.md) and create an email-ready, redacted local report with `scripts/create_support_report.py`. Pass the saved redacted collector/analyser JSON with `--log-analysis-json` so evidence is transferred deterministically rather than copied by hand. Include the product, firmware, reported faults, completed fixes, verification, log-collection status and outstanding items. Show the report to the customer for review.
+
+If the customer requests voice assistance, use short sentences and one instruction per response and invite them to use the Codex/ChatGPT voice or read-aloud control available on their device. Do not claim that the skill can force audio playback when the client does not expose a voice function.
 
 Offer one closing choice:
 

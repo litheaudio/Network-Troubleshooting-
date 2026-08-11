@@ -2,7 +2,7 @@
 
 Use a connector only when it is supplied or explicitly approved by Lithe Audio and is available as a callable Codex tool. A skill is workflow guidance; it cannot create API access by itself.
 
-Before a connector, use the bundled `scripts/download_speaker_logs.py` workflow for the approved read-only local log on the customer-supplied private speaker IP. This is target-only local access, not a support API. Never derive or probe any other path.
+Before a connector, use the bundled `scripts/collect_and_analyze_speaker_logs.py` workflow for the approved read-only local log on the customer-supplied private speaker IP. It deletes the raw file after local analysis. This is target-only local access, not a support API. Never derive or probe any other path.
 
 ## Required safeguards
 

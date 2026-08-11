@@ -1,4 +1,4 @@
 interface:
   display_name: "Lithe Speaker Network Check"
-  short_description: "Download logs and target approved network fixes"
-  default_prompt: "Use $diagnose-lithe-speaker-network for my real speaker issue. Ask one question per turn, run target-only checks, download the approved local speaker log from my supplied private IP, identify time-correlated smoking-gun candidates, explain the targeted fix and why, then action only the exact reversible change I separately approve and verify the result."
+  short_description: "Find evidence and safely fix speaker dropouts"
+  default_prompt: "Use $diagnose-lithe-speaker-network for my real speaker issue. Ask one question per turn, run locale-safe target-only checks, analyse the approved local speaker log without retaining the raw file, correlate time-weighted evidence, explain the targeted product-aware fix and why, then action only the exact reversible change I separately approve and verify the result."

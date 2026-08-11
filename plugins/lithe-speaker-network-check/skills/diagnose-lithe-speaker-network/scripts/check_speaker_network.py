@@ -92,7 +92,9 @@ def ping_command(address: str, count: int, timeout_ms: int) -> list[str]:
     ]
 
 
-def parse_ping(output: str, requested_count: int) -> PingResult:
+def parse_ping(
+    output: str, requested_count: int, return_code: Optional[int] = None
+) -> PingResult:
     text = output
     sent = requested_count
     received = 0
@@ -120,8 +122,21 @@ def parse_ping(output: str, requested_count: int) -> PingResult:
         received = int(unix_packets.group(2))
         loss = float(unix_packets.group(3))
     else:
-        replies = len(re.findall(r"(?:Reply from|bytes from|bytes=)", text, re.IGNORECASE))
+        # TTL is retained in Windows ping output across UI languages and in common
+        # Unix implementations, unlike translated words such as Reply/Received.
+        replies = len(re.findall(r"\bttl\s*[=:]\s*\d+\b", text, re.IGNORECASE))
         received = min(replies, requested_count)
+        if replies == 0 and return_code == 0:
+            return PingResult(
+                False,
+                requested_count,
+                0,
+                None,
+                None,
+                None,
+                None,
+                "Ping completed but its localised output could not be measured safely.",
+            )
         if requested_count:
             loss = round((requested_count - received) * 100 / requested_count, 1)
 
@@ -143,6 +158,17 @@ def parse_ping(output: str, requested_count: int) -> PingResult:
         minimum = float(unix_times.group(1))
         average = float(unix_times.group(2))
         maximum = float(unix_times.group(3))
+    elif received:
+        reply_times = [
+            float(value)
+            for value in re.findall(
+                r"(?:=|<)\s*([\d.]+)\s*ms\b", text, re.IGNORECASE
+            )
+        ]
+        if reply_times:
+            minimum = min(reply_times)
+            maximum = max(reply_times)
+            average = round(sum(reply_times) / len(reply_times), 3)
 
     return PingResult(
         available=True,
@@ -172,7 +198,11 @@ def run_ping(address: str, count: int, timeout_ms: int) -> PingResult:
         return PingResult(
             True, count, 0, 100.0, None, None, None, "Ping timed out."
         )
-    return parse_ping((completed.stdout or "") + "\n" + (completed.stderr or ""), count)
+    return parse_ping(
+        (completed.stdout or "") + "\n" + (completed.stderr or ""),
+        count,
+        completed.returncode,
+    )
 
 
 def selected_source(address: str) -> Optional[str]:
@@ -235,6 +265,8 @@ def classify(ping: PingResult, ports: dict[str, bool], source: Optional[str]) ->
         except ValueError:
             return "route_warning"
     any_tcp = any(ports.values())
+    if not ping.available:
+        return "icmp_unavailable" if any_tcp else "probe_unavailable"
     if ping.received == 0:
         return "icmp_blocked" if any_tcp else "unreachable"
     if (
@@ -259,6 +291,16 @@ def advice_for(status: str) -> str:
         "icmp_blocked": (
             "The speaker may be online even though ping is blocked. Confirm it in the "
             "router client list and check that the app and speaker use the same LAN."
+        ),
+        "icmp_unavailable": (
+            "The speaker answered a safe TCP check, but ping could not be measured "
+            "reliably on this computer. Treat the speaker as reachable and continue "
+            "with logs and router evidence."
+        ),
+        "probe_unavailable": (
+            "This computer could not produce a reliable ping result and the selected "
+            "TCP listeners did not answer. Do not call the speaker offline yet; verify "
+            "the router client state and retry from the same LAN."
         ),
         "unreachable": (
             "Check speaker power, the IP shown in the Lithe Audio app, the router client "
@@ -290,6 +332,19 @@ rtt min/avg/max/mdev = 2.100/4.200/8.300/1.000 ms
         second.loss_percent == 25,
         second.maximum_ms == 8.3,
         str(private_ipv4("192.168.1.45")) == "192.168.1.45",
+        parse_ping(
+            "Réponse de 192.168.1.45 : octets=32 temps=2 ms TTL=64\n"
+            "Réponse de 192.168.1.45 : octets=32 temps=4 ms TTL=64",
+            2,
+            0,
+        ).received
+        == 2,
+        classify(
+            PingResult(False, 0, 0, None, None, None, None, "Unavailable"),
+            {"80": False, "443": False},
+            "192.168.1.10",
+        )
+        == "probe_unavailable",
     ]
     try:
         private_ipv4("8.8.8.8")
@@ -372,6 +427,8 @@ def main() -> int:
         "healthy": "Healthy",
         "degraded": "Degraded",
         "icmp_blocked": "ICMP blocked",
+        "icmp_unavailable": "ICMP unavailable",
+        "probe_unavailable": "Probe unavailable",
         "unreachable": "Unreachable",
         "route_warning": "Route warning",
     }

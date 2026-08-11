@@ -11,6 +11,7 @@ import re
 import sys
 import uuid
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
 
@@ -51,10 +52,18 @@ ALLOWED_FIELDS = {
 }
 SECRET_RE = re.compile(
     r"(?i)\b(password|passcode|passwd|token|api[ _-]?key|secret|"
-    r"mfa|recovery[ _-]?code|username|email)\b\s*[:=]\s*([^\s,;]+)"
+    r"mfa|recovery[ _-]?code|username|email)\b\s*[:=]\s*"
+    r"(?:\"[^\"]*\"|'[^']*'|[^,;\n]+)"
 )
 MAC_RE = re.compile(r"\b([0-9a-fA-F]{2})(?:[:-]([0-9a-fA-F]{2})){5}\b")
 IPV4_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+IPV6_RE = re.compile(
+    r"(?<![\w:])(?:[0-9a-fA-F]{1,4}:){2,}[0-9a-fA-F:]{0,39}(?![\w:])"
+)
+MAX_JSON_BYTES = 5 * 1024 * 1024
+EMAIL_RE = re.compile(
+    r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"
+)
 
 
 def mask_mac(match: re.Match[str]) -> str:
@@ -73,11 +82,23 @@ def redact_public_ip(match: re.Match[str]) -> str:
     return "[REDACTED PUBLIC IP]"
 
 
+def redact_ipv6(match: re.Match[str]) -> str:
+    value = match.group(0)
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        return value
+    return value if address.is_private else "[REDACTED PUBLIC IPv6]"
+
+
 def sanitise(value: Any) -> str:
     text = str(value).replace("\r", " ").replace("\n", " ").strip()
     text = SECRET_RE.sub(lambda m: f"{m.group(1)}=[REDACTED]", text)
+    text = EMAIL_RE.sub("[REDACTED EMAIL]", text)
     text = MAC_RE.sub(mask_mac, text)
     text = IPV4_RE.sub(redact_public_ip, text)
+    text = IPV6_RE.sub(redact_ipv6, text)
+    text = re.sub(r"([`*\[\]()<>])", r"\\\1", text)
     return text[:500] or "Not provided"
 
 
@@ -99,6 +120,8 @@ def parse_fields(items: list[str]) -> dict[str, str]:
 def load_diagnostic(path: Path | None) -> dict[str, Any]:
     if path is None:
         return {}
+    if path.stat().st_size > MAX_JSON_BYTES:
+        raise ValueError("Diagnostic JSON exceeds the 5 MB limit.")
     data = json.loads(path.read_text(encoding="utf-8"))
     allowed = {
         "target_ip",
@@ -111,6 +134,45 @@ def load_diagnostic(path: Path | None) -> dict[str, Any]:
         "privacy",
     }
     return {key: data[key] for key in allowed if key in data}
+
+
+def fields_from_log_analysis(path: Path | None) -> dict[str, str]:
+    if path is None:
+        return {}
+    if path.stat().st_size > MAX_JSON_BYTES:
+        raise ValueError("Log-analysis JSON exceeds the 5 MB limit.")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    analysis = data.get("analysis", data)
+    collection = data.get("collection", {})
+    findings = analysis.get("findings", [])
+    if not isinstance(findings, list):
+        raise ValueError("Log-analysis JSON contains an invalid findings list.")
+    rendered = []
+    for finding in findings[:3]:
+        if not isinstance(finding, dict):
+            continue
+        rendered.append(
+            f"{finding.get('category', 'unknown')} ({finding.get('event_count', '?')} event(s))"
+        )
+    fields: dict[str, str] = {
+        "log_status": sanitise(collection.get("status", "Analysed locally")),
+        "log_source": "Approved local speaker log",
+        "log_window": sanitise(
+            f"{analysis.get('failure_time') or 'No precise failure time'}; "
+            f"coverage={analysis.get('failure_time_covered')}"
+        ),
+        "log_evidence": sanitise(", ".join(rendered) if rendered else "No supported pattern found"),
+    }
+    if findings and isinstance(findings[0], dict):
+        first = findings[0]
+        fields["likely_cause"] = sanitise(first.get("category", "Unconfirmed"))
+        fields["confidence"] = sanitise(
+            "Smoking-gun candidate; corroboration required"
+            if first.get("smoking_gun_candidate")
+            else "Possible; timestamp or corroboration incomplete"
+        )
+        fields["outstanding"] = sanitise(first.get("next_proof", "Review router/AP evidence"))
+    return fields
 
 
 def line(label: str, value: Any) -> str:
@@ -271,9 +333,33 @@ def run_self_test() -> int:
             "log_status=Failed - exported file contained zero bytes",
             "outstanding=Speaker log export requires investigation",
             "customer_notes=password=hunter2 public=8.8.8.8 mac=AA:BB:CC:DD:EE:FF",
+            "outstanding=Contact customer@example.com; token=correct horse battery staple",
         ]
     )
     report = build_report(sample, fields)
+    with TemporaryDirectory() as directory:
+        analysis_path = Path(directory) / "analysis.json"
+        analysis_path.write_text(
+            json.dumps(
+                {
+                    "collection": {"status": "downloaded"},
+                    "analysis": {
+                        "failure_time": "2026-08-11 10:00:00+01:00",
+                        "failure_time_covered": True,
+                        "findings": [
+                            {
+                                "category": "dhcp",
+                                "event_count": 1,
+                                "smoking_gun_candidate": True,
+                                "next_proof": "Compare router lease history",
+                            }
+                        ],
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        derived = fields_from_log_analysis(analysis_path)
     checks = [
         "hunter2" not in report,
         "8.8.8.8" not in report,
@@ -282,6 +368,13 @@ def run_self_test() -> int:
         "Two brick walls" in report,
         "Failed - exported file contained zero bytes" in report,
         "Thank you for your time today." in report,
+        "customer@example.com" not in report,
+        "correct horse battery staple" not in report,
+        "REDACTED EMAIL" in report,
+        "2001:4860:4860::8888" not in sanitise("WAN 2001:4860:4860::8888"),
+        fields_from_log_analysis(None) == {},
+        derived["likely_cause"] == "dhcp",
+        "corroboration required" in derived["confidence"],
     ]
     if all(checks):
         print("Self-test passed.")
@@ -295,6 +388,7 @@ def main() -> int:
         description="Create a redacted local Lithe Audio support report."
     )
     parser.add_argument("--diagnostic-json", type=Path)
+    parser.add_argument("--log-analysis-json", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--field", action="append", default=[], metavar="NAME=VALUE")
     parser.add_argument("--self-test", action="store_true")
@@ -310,7 +404,8 @@ def main() -> int:
 
     try:
         diagnostic = load_diagnostic(args.diagnostic_json)
-        fields = parse_fields(args.field)
+        fields = fields_from_log_analysis(args.log_analysis_json)
+        fields.update(parse_fields(args.field))
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         print(f"Cannot create report: {exc}", file=sys.stderr)
         return 2

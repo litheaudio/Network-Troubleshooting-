@@ -10,8 +10,11 @@ Customers can choose guided self-service or supervised support. In supervised su
 - Requests the affected speaker IP, asks exactly five essential diagnostic questions, then starts real tests without extending the intake.
 - Includes router, mesh, extender and serving access-point details, including location, band and backhaul when known.
 - Checks one customer-provided private speaker IP address.
+- Avoids false offline results when operating-system ping output is unavailable or localised.
 - Measures reachability, packet loss, minimum/average/maximum latency, and safe TCP response.
 - Uses authorised Read mode to download the approved local speaker log directly from the affected private IP, with a visible-browser fallback, then verifies and analyses it locally.
+- Deletes the raw speaker log after analysis by default and retains only provenance plus redacted findings.
+- Supports consent-gated target-only monitoring for daily or weekly intermittent faults.
 - Analyses customer-authorised speaker and router logs locally for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, access-point and discovery evidence.
 - Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
 - Presents a concise **Key issues found** and **What should be fixed and why** overview before proposing any change.
@@ -74,7 +77,7 @@ Codex will start the real customer-support workflow, ask for the affected speake
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
-Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.6.1.zip](lithe-speaker-network-check-plugin-v1.6.1.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.7.0.zip](lithe-speaker-network-check-plugin-v1.7.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
 Some Codex and ChatGPT installation screens insert this platform-owned draft:
 
@@ -109,7 +112,7 @@ If an older installation still shows all five questions together, remove the exi
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.6.1.zip](diagnose-lithe-speaker-network-v1.6.1.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
+The standalone [diagnose-lithe-speaker-network-v1.7.0.zip](diagnose-lithe-speaker-network-v1.7.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -174,6 +177,8 @@ The customer can say **stop** at any time.
 - **Healthy:** the speaker responds with no measured loss and stable local latency.
 - **Degraded:** the test found packet loss, average latency above 50 ms, or spikes above 100 ms.
 - **ICMP blocked:** ping failed but a safe TCP connection succeeded; the speaker may still be online.
+- **ICMP unavailable:** a safe TCP check answered, but this computer could not measure ping reliably.
+- **Probe unavailable:** the available checks did not produce enough evidence; this is not an offline conclusion.
 - **Unreachable:** neither ping nor the safe TCP checks responded.
 - **Route warning:** the computer may be using a VPN or an unexpected network route.
 
@@ -237,13 +242,25 @@ python scripts/analyze_speaker_logs.py speaker.log \
   --json
 ```
 
-To download the approved local speaker log directly from one private speaker IP before analysis:
+To collect and analyse the approved local speaker log without retaining the raw file:
 
 ```bash
-python scripts/download_speaker_logs.py 192.168.1.45 --output lithe-speaker-log.txt --json
+python scripts/collect_and_analyze_speaker_logs.py 192.168.1.45 \
+  --failure-time "2026-07-29 14:30:00" \
+  --timezone "Europe/London" \
+  --save-json speaker-analysis.json
 ```
 
-The downloader accepts only RFC1918 IPv4 addresses, uses one fixed approved read-only log path, refuses redirects and does not scan, authenticate, upload data or change settings.
+The collector accepts only RFC1918 IPv4 addresses, uses one fixed approved read-only log source, refuses redirects and does not scan, authenticate, upload data or change settings. The raw log is held in a temporary directory and deleted after analysis.
+
+For an intermittent fault, after permission to save measurements:
+
+```bash
+python scripts/monitor_speaker_network.py 192.168.1.45 \
+  --duration-minutes 1440 \
+  --interval-seconds 60 \
+  --output lithe-monitor.jsonl
+```
 
 The analyser reads local files only. It emits redacted event-category counts and timestamps for DHCP, Wi-Fi disconnects, timeouts/loss, gateway failures, reboots, discovery problems, roaming and access-point changes. It never uploads the log and does not automatically claim that an event is the root cause.
 
@@ -254,6 +271,7 @@ Create the diagnostic JSON first, then run:
 ```bash
 python scripts/create_support_report.py \
   --diagnostic-json diagnostic.json \
+  --log-analysis-json speaker-analysis.json \
   --output Lithe-Support-Report.md \
   --field "symptom=Speaker drops out weekly" \
   --field "frequency=About once a week" \
@@ -342,6 +360,7 @@ diagnose-lithe-speaker-network/
 │   ├── email-handoff.md
 │   ├── official-log-connector.md
 │   ├── privacy-and-safety.md
+│   ├── product-network-matrix.md
 │   ├── recovery-log-workflow.md
 │   ├── remediation.md
 │   ├── service-health.md
@@ -352,7 +371,9 @@ diagnose-lithe-speaker-network/
     ├── analyze_speaker_logs.py
     ├── check_speaker_network.py
     ├── check_speaker_services.py
+    ├── collect_and_analyze_speaker_logs.py
     ├── download_speaker_logs.py
+    ├── monitor_speaker_network.py
     └── create_support_report.py
 ```
 

@@ -124,6 +124,8 @@ Give the measured loss and latency first. Then explain Read mode and ask only fo
 
 After evidence collection, give **Key issues found** and **What should be fixed and why**, then propose one reversible action. Ask separately for Write mode before applying it. Do not restart the interview.
 
+If ping cannot be measured reliably, say **measurement unavailable** and continue with safe TCP, log and router evidence. Never tell the customer the speaker is offline solely because the operating-system ping output could not be parsed.
+
 ## Post-change checkpoint
 
 After one approved change and retest, ask:
