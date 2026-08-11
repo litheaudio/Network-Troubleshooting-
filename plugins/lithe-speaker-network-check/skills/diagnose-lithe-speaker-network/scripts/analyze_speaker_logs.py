@@ -62,6 +62,50 @@ NEXT_PROOF = {
     "roaming_or_ap_change": "Check AP association history, backhaul and fast-roaming settings.",
 }
 
+TARGETED_FIX = {
+    "dhcp": (
+        "Create a router-side DHCP reservation for the speaker's current address after "
+        "checking that no other client owns it.",
+        "This prevents lease churn and duplicate-address conflicts without setting a "
+        "manual address on the speaker.",
+    ),
+    "wifi_disconnect": (
+        "Correct the serving access point or radio path shown at the event time, then "
+        "retest signal and retries.",
+        "The log shows loss of Wi-Fi association; changing DHCP alone would not repair "
+        "the radio interruption.",
+    ),
+    "timeout_or_loss": (
+        "Reduce retry or packet-loss conditions on the serving access point and retest "
+        "before changing another setting.",
+        "Timeout evidence identifies an interrupted data path but needs AP counters to "
+        "select channel, placement or load as the exact cause.",
+    ),
+    "route_or_gateway": (
+        "Correct the speaker's LAN/VLAN gateway path or client-isolation setting after "
+        "confirming the router state.",
+        "The speaker could not reach its local gateway or route, so radio tuning alone "
+        "would not restore the path.",
+    ),
+    "reboot_or_watchdog": (
+        "Preserve the log, verify power and firmware state, and escalate the restart "
+        "evidence before making broad Wi-Fi changes.",
+        "A reboot or watchdog reset points to speaker power or software recovery rather "
+        "than proving a router fault.",
+    ),
+    "discovery": (
+        "Keep the phone and speaker on the same trusted LAN and correct client isolation "
+        "or multicast discovery controls.",
+        "The IP path can remain reachable while isolation prevents the Lithe Audio app "
+        "from discovering the speaker.",
+    ),
+    "roaming_or_ap_change": (
+        "Stabilise the stationary speaker on a proven access point or disable unsuitable "
+        "fast roaming for its SSID, one reversible change at a time.",
+        "The interruption aligns with an AP, BSSID or channel transition.",
+    ),
+}
+
 
 @dataclass
 class Finding:
@@ -72,6 +116,9 @@ class Finding:
     sample_timestamps: list[str]
     relation_to_failure: str
     next_proof: str
+    smoking_gun_candidate: bool
+    targeted_fix: str
+    why_this_fix: str
 
 
 @dataclass
@@ -250,11 +297,13 @@ def validate_paths(values: list[str]) -> list[Path]:
 def build_findings(
     accumulators: dict[str, CategoryAccumulator],
     failure_time: Optional[datetime],
+    failure_covered: Optional[bool],
 ) -> list[Finding]:
     findings: list[Finding] = []
     for category, accumulator in accumulators.items():
         if accumulator.count == 0:
             continue
+        targeted_fix, why_this_fix = TARGETED_FIX[category]
         findings.append(
             Finding(
                 category=category,
@@ -276,6 +325,11 @@ def build_findings(
                     else "observed_without_failure_window"
                 ),
                 next_proof=NEXT_PROOF[category],
+                smoking_gun_candidate=bool(
+                    failure_time and failure_covered is True and accumulator.first
+                ),
+                targeted_fix=targeted_fix,
+                why_this_fix=why_this_fix,
             )
         )
     return sorted(findings, key=lambda finding: finding.event_count, reverse=True)
@@ -296,6 +350,8 @@ def run_self_test() -> int:
         failure,
         15,
     )
+    findings = build_findings(accumulators, failure, True)
+    finding_by_category = {finding.category: finding for finding in findings}
     checks = [
         scanned == 5,
         outside == 1,
@@ -309,6 +365,9 @@ def run_self_test() -> int:
         failure_is_covered(
             failure, post_restart_earliest, post_restart_latest
         ) is False,
+        finding_by_category["dhcp"].smoking_gun_candidate is True,
+        "DHCP reservation" in finding_by_category["dhcp"].targeted_fix,
+        bool(finding_by_category["dhcp"].why_this_fix),
     ]
     if all(checks):
         print("Self-test passed.")
@@ -350,7 +409,8 @@ def main() -> int:
         args.failure_time,
         args.window_minutes,
     )
-    findings = build_findings(accumulators, args.failure_time)
+    covered = failure_is_covered(args.failure_time, earliest, latest)
+    findings = build_findings(accumulators, args.failure_time, covered)
     result = {
         "files_analysed": [path.name for path in paths],
         "timezone_label": args.timezone,
@@ -369,13 +429,12 @@ def main() -> int:
                 latest.isoformat(sep=" ", timespec="seconds") if latest else None
             ),
         },
-        "failure_time_covered": failure_is_covered(
-            args.failure_time, earliest, latest
-        ),
+        "failure_time_covered": covered,
         "matching_lines_outside_window_or_without_timestamp": outside,
         "findings": [asdict(finding) for finding in findings],
         "interpretation": (
-            "Timestamp-correlated patterns found; corroborate before assigning cause."
+            "Timestamp-correlated smoking-gun candidate(s) found; corroborate before "
+            "assigning a confirmed cause or applying the targeted fix."
             if findings and args.failure_time
             else "Patterns found without a precise failure window; correlation is unproven."
             if findings
@@ -414,6 +473,8 @@ def main() -> int:
         if finding.sample_timestamps:
             print(f"Times: {', '.join(finding.sample_timestamps)}")
         print(f"Next proof: {finding.next_proof}")
+        print(f"Targeted fix: {finding.targeted_fix}")
+        print(f"Why: {finding.why_this_fix}")
     print(f"Interpretation: {result['interpretation']}")
     print(f"Privacy: {result['privacy']}")
     return 0

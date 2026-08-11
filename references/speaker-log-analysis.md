@@ -16,7 +16,7 @@ When browser or computer control is available:
 6. Restrict the time window to 15 minutes before and after the reported fault when possible.
 7. Record the current/historical serving AP, band, RSSI, retries, drops, roaming, backhaul and DHCP state when shown.
 
-If no supported log view is visible, guide the customer to export the official support log. Never guess a URL or call an undocumented log endpoint.
+After Read-mode permission, use `scripts/download_speaker_logs.py` with the validated private speaker IP. This uses only the Lithe-approved local log path. If direct local access is unavailable, use the same approved URL in the customer-controlled browser and complete the Chrome **Downloads > Keep** checkpoint. Never try spelling variants, enumerate paths or probe another endpoint.
 
 ## Run local analysis
 
@@ -37,6 +37,8 @@ The analyser:
 - identifies DHCP, Wi-Fi disconnect, timeout/loss, route/gateway, reboot/watchdog, discovery and roaming/AP-change patterns;
 - separates events inside the selected failure window from unrelated history;
 - reports the earliest and latest usable log timestamps and whether they cover the supplied failure time;
+- returns a smoking-gun-candidate flag only for timestamp-correlated evidence in a log that covers the failure;
+- returns a targeted fix, reason and next proof for each category;
 - does not declare a root cause automatically.
 
 ## Correlate evidence
@@ -63,6 +65,8 @@ Use **Confirmed** only when the event:
 Use **Likely** when at least two independent observations align. Use **Possible** for one ambiguous event.
 
 Do not call startup messages, old warnings, one timeout outside the failure window or a clean short sample a smoking gun.
+
+Use the highest-ranked time-correlated category to select the smallest targeted fix. Apply nothing until router/AP evidence supports the setting and the customer separately approves Write mode. If evidence categories conflict, present up to three ranked candidates and gather the stated next proof instead of guessing.
 
 When a log is generated after a power cycle, require `failure_time_covered: true` before using it to explain the pre-restart fault. If coverage is false, use the log only as recovery evidence.
 

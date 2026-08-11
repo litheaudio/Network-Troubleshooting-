@@ -106,18 +106,27 @@ Offer:
 For option 1:
 
 1. Read [official-log-connector.md](references/official-log-connector.md).
-2. Check whether an approved Lithe support-log connector is available as a callable tool. Never invent or search for an endpoint.
-3. If available, explain the read-only scope and ask permission to retrieve logs for this speaker and the smallest useful failure window.
-4. Let the customer authenticate through the connector's official flow. Never request or handle a password, token, cookie or MFA code in chat.
-5. Query only the affected speaker and time window. Request diagnostic/event data only; do not request configuration secrets or unrelated devices.
-6. Save only a redacted local export when the customer separately asks to save it. Otherwise analyse the connector response in memory and retain only the redacted findings.
-7. If no approved connector is installed, say: **"Direct Lithe support-log access is not available in this setup."** Do not imply that logs were checked. Continue immediately with the official visible interface, customer export or timed network monitor.
-8. Use an available browser or computer-control tool for the customer-approved official speaker, router or access-point interface. If the required tool is unavailable, say so and switch to customer-guided steps; never claim direct access.
-9. Let the customer type credentials and complete MFA personally.
-10. Locate the supplied IP directly; do not enumerate or record unrelated clients.
-11. Inspect the smallest useful window around the reported failure.
-12. Use the visible official **Generate Log**, **Download Log** or clearly equivalent control when available. Complete the Chrome Downloads/Keep checkpoint below, verify the file is new and larger than zero bytes, then analyse it locally.
-13. Collect, when available:
+2. After Read-mode permission, first try the approved target-only local speaker-log download:
+
+   ```powershell
+   python scripts/download_speaker_logs.py 192.168.1.45 --output lithe-speaker-log.txt --json
+   ```
+
+   Replace the example with the validated customer IP. The script constructs only the approved read-only `/devcielogs.txt` path on that exact RFC1918 address. It refuses redirects, public addresses, empty responses, HTML error pages and payloads above 100 MB. It performs no scan, authentication, upload or setting change.
+3. If the direct download succeeds, verify the reported size is greater than zero and analyse the saved file locally. Do not expose the log URL in the customer-facing result; call it the **official local speaker log**.
+4. If the script cannot access the customer's LAN because of the execution environment, use an available browser/computer-control tool to open the same approved log URL for the supplied IP. Do not try spelling variations or additional paths. Complete the Chrome Downloads/Keep checkpoint before inspecting the file.
+5. If the approved local download is unavailable, check whether an approved Lithe support-log connector is available as a callable tool. Never invent or search for another endpoint.
+6. If available, explain the read-only scope and ask permission to retrieve logs for this speaker and the smallest useful failure window.
+7. Let the customer authenticate through the connector's official flow. Never request or handle a password, token, cookie or MFA code in chat.
+8. Query only the affected speaker and time window. Request diagnostic/event data only; do not request configuration secrets or unrelated devices.
+9. Save only a redacted local export when the customer separately asks to save it. Otherwise analyse the connector response in memory and retain only the redacted findings.
+10. If no approved connector is installed, continue immediately with the official visible interface, customer export or timed network monitor. Do not imply that logs were checked.
+11. Use an available browser or computer-control tool for the customer-approved official speaker, router or access-point interface. If the required tool is unavailable, say so and switch to customer-guided steps; never claim direct access.
+12. Let the customer type credentials and complete MFA personally.
+13. Locate the supplied IP directly; do not enumerate or record unrelated clients.
+14. Inspect the smallest useful window around the reported failure.
+15. Use the visible official **Generate Log**, **Download Log** or clearly equivalent control when available. Complete the Chrome Downloads/Keep checkpoint below, verify the file is new and larger than zero bytes, then analyse it locally.
+16. Collect, when available:
    - DHCP lease, renewal, address-change or conflict history;
    - online/offline and reboot history;
    - current and historical serving access point or mesh node;
@@ -126,7 +135,7 @@ For option 1:
    - client isolation and discovery state;
    - official speaker event or support logs.
 
-Do not guess or discover hidden log endpoints. If no supported log source is available, use option 2 and ask the customer to export the official support log. For recurring faults, offer a target-only timestamped monitor without presenting it as internal speaker logging.
+Use only the approved local log path above; do not guess, enumerate or discover any other endpoint. If no supported log source is available, use option 2 and ask the customer to export the official support log. For recurring faults, offer a target-only timestamped monitor without presenting it as internal speaker logging.
 
 Immediately after using the visible **Generate Log** control in Chrome, pause and ask the customer to open **Chrome Downloads** using the Downloads button at the top right (or `Ctrl+J`). Ask them to find the speaker log and click **Keep** if Chrome shows the normal local-HTTP **Keep / Discard** prompt. Wait for the customer to confirm **Kept** or **No Keep option shown** before checking for or analysing the file. If Chrome calls the file dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
 
@@ -141,7 +150,7 @@ python scripts/analyze_speaker_logs.py speaker.log `
   --json
 ```
 
-Omit `--failure-time` only when the customer cannot identify a failure window. The analyser reads local files, identifies timestamped DHCP, Wi-Fi disconnect, timeout, route, reboot, discovery, roaming and channel-change patterns, and returns redacted category summaries. It does not contact the speaker or upload logs.
+Omit `--failure-time` only when the customer cannot identify a failure window. The analyser reads local files, identifies timestamped DHCP, Wi-Fi disconnect, timeout, route, reboot, discovery, roaming and channel-change patterns, and returns redacted category summaries. Each finding includes a smoking-gun-candidate flag, next proof, targeted fix and reason. It does not contact the speaker or upload logs.
 
 Read [speaker-log-analysis.md](references/speaker-log-analysis.md). Classify evidence as:
 
@@ -149,7 +158,7 @@ Read [speaker-log-analysis.md](references/speaker-log-analysis.md). Classify evi
 - **Likely:** at least two independent observations align.
 - **Possible:** one ambiguous observation needs confirmation.
 
-Do not call a lone warning a smoking gun.
+Call a finding a **smoking-gun candidate** only when its timestamp overlaps the supplied failure and the exported log covers that failure time. Call it **Confirmed** only after the source belongs to the affected speaker and the causal event is corroborated by live, router or AP evidence. Do not call a lone warning a smoking gun.
 
 Before analysing any exported file, verify that it exists and its size is greater than zero. A zero-byte file means **log collection failed**; it does not mean the speaker had no events. Retry the visible **Generate Log** workflow once after a fresh customer action. If the second export is also empty or no download payload is issued, stop retrying, record the export failure and continue with the other evidence. Tell the customer plainly:
 

@@ -11,7 +11,7 @@ Customers can choose guided self-service or supervised support. In supervised su
 - Includes router, mesh, extender and serving access-point details, including location, band and backhaul when known.
 - Checks one customer-provided private speaker IP address.
 - Measures reachability, packet loss, minimum/average/maximum latency, and safe TCP response.
-- Uses authorised Read mode to inspect the affected device, download its official support log through visible controls, verify the download, and analyse it locally.
+- Uses authorised Read mode to download the approved local speaker log directly from the affected private IP, with a visible-browser fallback, then verifies and analyses it locally.
 - Analyses customer-authorised speaker and router logs locally for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, access-point and discovery evidence.
 - Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
 - Presents a concise **Key issues found** and **What should be fixed and why** overview before proposing any change.
@@ -74,7 +74,7 @@ Codex will start the real customer-support workflow, ask for the affected speake
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
-Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.6.0.zip](lithe-speaker-network-check-plugin-v1.6.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.6.1.zip](lithe-speaker-network-check-plugin-v1.6.1.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
 Some Codex and ChatGPT installation screens insert this platform-owned draft:
 
@@ -109,7 +109,7 @@ If an older installation still shows all five questions together, remove the exi
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.6.0.zip](diagnose-lithe-speaker-network-v1.6.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
+The standalone [diagnose-lithe-speaker-network-v1.6.1.zip](diagnose-lithe-speaker-network-v1.6.1.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -237,6 +237,14 @@ python scripts/analyze_speaker_logs.py speaker.log \
   --json
 ```
 
+To download the approved local speaker log directly from one private speaker IP before analysis:
+
+```bash
+python scripts/download_speaker_logs.py 192.168.1.45 --output lithe-speaker-log.txt --json
+```
+
+The downloader accepts only RFC1918 IPv4 addresses, uses one fixed approved read-only log path, refuses redirects and does not scan, authenticate, upload data or change settings.
+
 The analyser reads local files only. It emits redacted event-category counts and timestamps for DHCP, Wi-Fi disconnects, timeouts/loss, gateway failures, reboots, discovery problems, roaming and access-point changes. It never uploads the log and does not automatically claim that an event is the root cause.
 
 ## Create a redacted support report
@@ -344,6 +352,7 @@ diagnose-lithe-speaker-network/
     ├── analyze_speaker_logs.py
     ├── check_speaker_network.py
     ├── check_speaker_services.py
+    ├── download_speaker_logs.py
     └── create_support_report.py
 ```
 

@@ -31,7 +31,7 @@ If none is available, state that the restart is a recovery step and may reduce d
 2. Wait for the supplied IP to answer the target-only check; do not scan for a replacement address.
 3. Run the 20-ping check and record the recovered measurements.
 4. Open `http://<supplied-private-IP>/` through the browser. Do not assume HTTPS when port 443 does not respond.
-5. Use only the visible official interface. Click **Generate Log** or its clearly equivalent visible control; do not guess a download URL.
+5. Retry `scripts/download_speaker_logs.py` for the validated speaker IP. If direct local access is unavailable, open only the approved local log URL derived by the skill for that same IP. Otherwise use the visible official interface and click **Generate Log** or its clearly equivalent control. Do not try another path.
 6. Pause and tell the customer: **"Please open Chrome Downloads using the Downloads button at the top right, or press Ctrl+J. Find the speaker log. If Chrome shows Keep or Discard for this local download, click Keep, then tell me when it says the download is complete."**
 7. Wait for the customer to reply **Kept** or **No Keep option shown**. Do not continue to file inspection while the download decision is pending. If Chrome describes the file as dangerous, suspicious or malicious, tell the customer not to keep it and stop the download workflow.
 8. After the customer's confirmation, wait for the download to finish and verify that a new file exists. Inspect only the expected recent log file; do not enumerate or expose unrelated downloads.
