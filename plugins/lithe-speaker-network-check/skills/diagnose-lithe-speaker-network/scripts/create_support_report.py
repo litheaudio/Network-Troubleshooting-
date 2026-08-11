@@ -42,9 +42,16 @@ ALLOWED_FIELDS = {
     "log_status": "Log collection status",
     "likely_cause": "Likely cause",
     "confidence": "Diagnostic confidence",
+    "initial_findings": "Initial findings",
+    "meaning": "What the findings mean",
+    "before_measurements": "Before change",
+    "approved_fix": "Approved fix",
     "changes": "Changes tried",
+    "expected_improvement": "Expected improvement",
+    "after_measurements": "After change",
     "rollback": "Rollback",
     "verification": "Verification outcome",
+    "customer_outcome": "Customer-reported outcome",
     "faults_found": "Faults identified",
     "fixes_completed": "Improvements completed",
     "outstanding": "Outstanding items",
@@ -277,12 +284,31 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
         if key in fields:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
 
-    sections.extend(["", "## Actions and verification", ""])
+    sections.extend(["", "## Problem and diagnosis", ""])
     for key in [
+        "initial_findings",
+        "meaning",
         "faults_found",
+    ]:
+        if key in fields:
+            sections.append(line(ALLOWED_FIELDS[key], fields[key]))
+
+    sections.extend(["", "## Fix completed and expected improvement", ""])
+    for key in [
+        "approved_fix",
         "fixes_completed",
         "changes",
+        "expected_improvement",
         "rollback",
+    ]:
+        if key in fields:
+            sections.append(line(ALLOWED_FIELDS[key], fields[key]))
+
+    sections.extend(["", "## Before and after verification", ""])
+    for key in [
+        "before_measurements",
+        "after_measurements",
+        "customer_outcome",
         "verification",
         "outstanding",
     ]:
@@ -331,6 +357,13 @@ def run_self_test() -> int:
             "firmware_version=TEST.1",
             "walls=Two brick walls",
             "log_status=Failed - exported file contained zero bytes",
+            "initial_findings=5 percent loss and 140 ms maximum latency",
+            "meaning=The live path was unstable during the sample",
+            "before_measurements=19/20 replies and 5 percent loss",
+            "approved_fix=Created a DHCP reservation",
+            "expected_improvement=Prevent address changes after lease renewal",
+            "after_measurements=20/20 replies and 0 percent loss",
+            "customer_outcome=Playback passed for five minutes",
             "outstanding=Speaker log export requires investigation",
             "customer_notes=password=hunter2 public=8.8.8.8 mac=AA:BB:CC:DD:EE:FF",
             "outstanding=Contact customer@example.com; token=correct horse battery staple",
@@ -368,6 +401,10 @@ def run_self_test() -> int:
         "Two brick walls" in report,
         "Failed - exported file contained zero bytes" in report,
         "Thank you for your time today." in report,
+        "## Problem and diagnosis" in report,
+        "## Fix completed and expected improvement" in report,
+        "## Before and after verification" in report,
+        "Prevent address changes after lease renewal" in report,
         "customer@example.com" not in report,
         "correct horse battery staple" not in report,
         "REDACTED EMAIL" in report,

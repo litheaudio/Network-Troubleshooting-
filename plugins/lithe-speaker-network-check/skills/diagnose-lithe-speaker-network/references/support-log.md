@@ -1,6 +1,6 @@
 # Redacted Support Log
 
-Create a local report only after the customer asks for one. Show it for customer review before it is shared.
+Always render the redacted closing report in chat. Create a local report only after the customer approves saving it. Show it for customer review before it is shared.
 
 ## Recommended fields
 
@@ -36,9 +36,16 @@ Allowed names:
 - `log_status`
 - `likely_cause`
 - `confidence`
+- `initial_findings`
+- `meaning`
+- `before_measurements`
+- `approved_fix`
 - `changes`
+- `expected_improvement`
+- `after_measurements`
 - `rollback`
 - `verification`
+- `customer_outcome`
 - `faults_found`
 - `fixes_completed`
 - `outstanding`
@@ -60,8 +67,14 @@ python scripts/create_support_report.py `
   --field "log_window=15 minutes around the reported dropout" `
   --field "log_evidence=Wi-Fi disassociation aligned with the dropout" `
   --field "confidence=Confirmed by speaker event and router client history" `
-  --field "changes=Created a DHCP reservation" `
-  --field "verification=20/20 replies; five-minute playback passed"
+  --field "initial_findings=5 percent loss and 140 ms maximum latency" `
+  --field "meaning=The live Wi-Fi path was unstable during the test" `
+  --field "before_measurements=19/20 replies; 5 percent loss; 61 ms average" `
+  --field "approved_fix=Moved the speaker to the nearer access point" `
+  --field "expected_improvement=Reduce packet loss and audio interruptions" `
+  --field "after_measurements=20/20 replies; 0 percent loss; 12 ms average" `
+  --field "customer_outcome=Playback and app visibility passed for five minutes" `
+  --field "verification=Improved; recurring fault still requires monitoring"
 ```
 
 The script rejects unknown fields, masks full MAC addresses, redacts likely secrets and public IP addresses, and does not upload the report.
@@ -90,7 +103,9 @@ Include:
 - whether the cause is confirmed, likely, or possible;
 - router/AP evidence;
 - exactly what changed;
+- why it changed and the expected improvement;
 - before/after measurements;
+- the customer-reported outcome;
 - verification outcome;
 - unresolved questions.
 

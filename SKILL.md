@@ -89,11 +89,35 @@ Never claim a test ran unless tool output proves it ran. Report:
 
 A healthy short test proves only that the IP path was healthy during the sample. For a weekly fault, continue to timestamped logs and DHCP/AP history.
 
+## Explain the first test immediately
+
+Before requesting any further access, give the customer a short result in this exact order:
+
+```text
+First-test finding: [plain-English result]
+Evidence: [replies/loss/latency/TCP/route facts]
+What this means: [what the evidence proves and what it does not prove]
+How to fix it: [the smallest likely fix or the next evidence needed before changing anything]
+Evidence source: Live target-only network test; no support API was used.
+```
+
+Interpret the result accurately:
+
+- **Healthy:** The connection is stable now. An intermittent DHCP, AP, roaming or speaker-service fault is not ruled out; inspect timestamped logs and router/AP history before changing settings.
+- **Degraded:** Loss or latency is visible now. Inspect signal, retries, channel use, serving AP and backhaul; improve only the evidence-backed weak point.
+- **ICMP blocked:** Ping is blocked but another safe response proves reachability. Do not diagnose weak Wi-Fi from missing ping alone; continue with logs, TCP/service evidence and the router client record.
+- **ICMP unavailable:** The local ping tool could not produce a trustworthy measurement while other evidence may show reachability. Continue with logs and router/AP evidence.
+- **Probe unavailable:** The environment could not run a reliable target check. Do not call the speaker offline; use the router client record, official log or a customer-guided test.
+- **Unreachable:** Neither a valid ping nor safe TCP response was observed. Check that the IP is current, then inspect DHCP lease, serving AP and power state before proposing a fix.
+- **Route warning:** The diagnostic computer may be on a VPN, guest network or different subnet. Correct that route first and repeat the test.
+
+Never call a suggested action a confirmed fix at this stage. Label it **likely fix** until logs/AP evidence support it and **verified fix** only after a successful before/after retest and customer playback result.
+
 When the speaker is reachable but AirPlay, Spotify, the Lithe app and the visible web page disagree, offer one deeper read-only checkpoint. After permission, read [service-health.md](references/service-health.md) and run `scripts/check_speaker_services.py` against the supplied IP. Use it to separate network reachability from a stalled service. Do not describe service-port evidence as internal logs.
 
 ## Inspect logs and access-point evidence
 
-After the local test, present the measurements in one short paragraph. Explain that **Read mode** can inspect and download relevant evidence but cannot change settings. Then ask one permission checkpoint:
+After the immediate first-test explanation, explain that **Read mode** can inspect and download relevant evidence but cannot change settings. Then ask one permission checkpoint:
 
 > The live connection test is complete. May I use Read mode to inspect the affected speaker and its router/access-point evidence, and download its official support log where available? Read mode will not change any settings.
 
@@ -136,6 +160,8 @@ For option 1:
    - access-point load and wired/wireless backhaul;
    - client isolation and discovery state;
    - official speaker event or support logs.
+
+Track the evidence source explicitly. Report **Support API/connector: Used** only when an approved callable connector returned evidence in this session. Otherwise report **Support API/connector: Not available** or **Not used**. The bundled local speaker-log collection is local device access, not a cloud or support API. Never imply that an API, log, router or access point was inspected without tool output proving it.
 
 Use only the approved fixed local log source; do not guess, enumerate or discover any other endpoint. If no supported log source is available, use option 2 and ask the customer to export the official support log.
 
@@ -255,17 +281,22 @@ Do not stack unverified changes. Offer rollback first if the result is worse.
 
 ## Close the customer case
 
-At the end of every completed diagnostic session, give a brief customer-facing summary containing:
+At the end of every completed diagnostic session, render a redacted customer report in the chat containing:
 
 - the product name and firmware version when available;
 - the faults reported and their frequency;
-- the checks and improvements completed, with a short reason for each;
-- the verification result;
+- the first-test findings and what they meant;
+- every evidence source actually used, including whether a support API/connector was used;
+- the confirmed, likely or possible cause and its evidence;
+- the exact approved fix completed, or **No settings changed**;
+- why the change was made and what it was expected to improve;
+- the before and after measurements;
+- the customer's playback/app outcome and the verification result;
 - anything still outstanding, including an unavailable or zero-byte speaker log.
 
-Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
+Clearly separate **Expected improvement** from **Observed after retest**. Never claim an expected benefit was achieved unless the retest and customer result support it. Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
 
-Then read [support-log.md](references/support-log.md) and create an email-ready, redacted local report with `scripts/create_support_report.py`. Pass the saved redacted collector/analyser JSON with `--log-analysis-json` so evidence is transferred deterministically rather than copied by hand. Include the product, firmware, reported faults, completed fixes, verification, log-collection status and outstanding items. Show the report to the customer for review.
+Then read [support-log.md](references/support-log.md). Ask whether the customer wants the report saved locally. Local file creation requires this consent; the in-chat report does not. If approved, create an email-ready redacted report with `scripts/create_support_report.py`. Pass the diagnostic JSON and saved redacted collector/analyser JSON so evidence is transferred deterministically rather than copied by hand. Include the first findings, meaning, before measurements, approved fix, completed work, expected improvement, after measurements, customer outcome, verification, log-collection status and outstanding items. Show the saved report to the customer for review.
 
 If the customer requests voice assistance, use short sentences and one instruction per response and invite them to use the Codex/ChatGPT voice or read-aloud control available on their device. Do not claim that the skill can force audio playback when the client does not expose a voice function.
 
