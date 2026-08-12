@@ -5,7 +5,7 @@ Use this workflow only after the redacted report has been generated and shown to
 ## Draft-first workflow
 
 1. Offer **Create an Outlook email with the report attached** or **Keep the report on this computer**.
-2. If email is chosen, confirm the exact support recipient address. Do not infer, search for or substitute an address.
+2. Offer the published Lithe Audio Support address, `support@litheaudio.com`, and show it to the customer. Require the customer to confirm that exact recipient before creating or sending anything. Do not silently substitute another address.
 3. Confirm that an approved Outlook Email connector is available. If it is unavailable, keep the report local and explain how to attach it manually.
 4. Create a new Outlook draft with the redacted report attached. Outlook write actions use plain text.
 5. Show the customer:
@@ -50,3 +50,9 @@ Kind regards
 - Treat recipient selection, attachment and sending as external data transmission.
 - Do not save email credentials in the skill or ask the customer to provide them in chat. Use the connector's official sign-in flow.
 - Never enable automatic unattended sending.
+
+## Published Lithe Audio Support details
+
+- Telephone: +44 (0)1293 922015
+- Email: support@litheaudio.com
+- Support portal: https://support.litheaudio.com

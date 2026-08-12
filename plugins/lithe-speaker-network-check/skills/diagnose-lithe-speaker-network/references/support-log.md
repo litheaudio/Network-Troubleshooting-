@@ -136,6 +136,15 @@ Include:
 
 Write the report so the customer can attach it directly to an email to Lithe Audio support. End it with a short customer acknowledgement and **Thank you for your time today.** State that the report was not emailed or uploaded automatically.
 
+End every report with:
+
+```text
+Further help - Lithe Audio Support
+Telephone: +44 (0)1293 922015
+Email: support@litheaudio.com
+Support portal: https://support.litheaudio.com
+```
+
 Exclude:
 
 - router or Wi-Fi passwords;

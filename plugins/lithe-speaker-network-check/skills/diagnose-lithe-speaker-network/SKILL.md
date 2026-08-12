@@ -124,7 +124,23 @@ When the speaker is reachable but AirPlay, Spotify, the Lithe app and the visibl
 
 ## Inspect logs and access-point evidence
 
-After the immediate first-test explanation, explain that **Read mode** can inspect and download relevant evidence but cannot change settings. Then ask one permission checkpoint:
+After the immediate first-test explanation, give a detailed first-pass overview before asking for router access:
+
+```text
+FIRST-PASS OVERVIEW
+Customer symptom: [what happens, frequency and affected devices]
+Basic connectivity: [Pass / Concern / Evidence unavailable]
+Measurements: [replies, loss, latency, jitter, burst loss, TCP and route]
+What was found: [evidence-backed observations only]
+What it means: [plain-English impact and limits]
+What is not yet known: [DHCP/IP, RF, multicast/mDNS, AP, Cast or log evidence still missing]
+Most likely areas to investigate: [up to three, labelled Likely/Possible rather than confirmed]
+Next step and why: Inspect the router/access point and official speaker log to identify the failing layer before changing settings.
+```
+
+Do not show only **Healthy** or **Ping passed**. Do not call the network healthy. A first-pass overview must clearly distinguish a current connectivity measurement from a probable root cause.
+
+Then explain that **Read mode** can inspect and download relevant evidence but cannot change settings. Ask one permission checkpoint:
 
 > The live connection test is complete. May I use Read mode to inspect the affected speaker and its router/access-point evidence, and download its official support log where available? Read mode will not change any settings.
 
@@ -133,6 +149,8 @@ Offer:
 1. **Inspect and download approved logs and network evidence**
 2. **Guide me to export the logs**
 3. **Skip logs and show the current result**
+
+For option 1, inspect the router/access-point evidence before proposing a change. Complete the DHCP/IP, RF, multicast/mDNS, AP behaviour, Cast/service and topology fields available in [diagnostic-layers.md](references/diagnostic-layers.md). If router access is unavailable or refused, mark the affected layers **Evidence unavailable** and do not claim a router setting is the cause.
 
 For option 1:
 
@@ -283,6 +301,8 @@ Offer:
 
 Use direct browser/computer control only after option 1. Let the customer enter credentials and MFA. Read the setting back before saving, make only the approved change, save it, then read back the resulting value. Do not broaden the permission or batch other changes. If the UI, current value or save result is ambiguous, stop and ask the customer rather than guessing.
 
+Never ask for generic permission such as **May I fix the router?** Ask only after router inspection and name the evidence, exact device, setting, current value, proposed value, expected interruption, reason and rollback. Treat each additional setting as a new permission checkpoint.
+
 Explain the change, expected interruption and rollback. Make only one change, then:
 
 1. confirm the expected IP and serving AP;
@@ -315,13 +335,33 @@ At the end of every completed diagnostic session, render a redacted customer rep
 - the customer's playback/app outcome and the verification result;
 - anything still outstanding, including an unavailable or zero-byte speaker log.
 
+Use this closing order:
+
+```text
+FINAL CUSTOMER OVERVIEW
+Problem reported: [symptom and frequency]
+Problem found: [probable root cause, confidence and smoking-gun status]
+Evidence: [short correlated chain and sources]
+What was fixed: [exact approved change, or No settings changed]
+Why it was fixed: [how it addresses the evidence]
+Before and after: [measurements and customer playback/app result]
+Expected improvement: [specific outcome]
+Observed improvement: [verified outcome, or Too early to confirm]
+Outstanding: [monitoring period or unresolved evidence]
+
+Further help - Lithe Audio Support
+Telephone: +44 (0)1293 922015
+Email: support@litheaudio.com
+Support portal: https://support.litheaudio.com
+```
+
 Clearly separate **Expected improvement** from **Observed after retest**. Never claim an expected benefit was achieved unless the retest and customer result support it. Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
 
 Then read [support-log.md](references/support-log.md). Ask whether the customer wants the report saved locally. Local file creation requires this consent; the in-chat report does not. If approved, create an email-ready redacted Markdown report with `scripts/create_support_report.py`, passing `--diagnostic-json`, `--log-analysis-json` and `--correlation-json` when available. Then create `Lithe-Audio-Network-Support-Report.pdf` with `scripts/create_support_pdf.py`. The PDF must include the layer findings, DHCP health, dual-band result, topology, probable root cause, smoking-gun status/evidence, approved fixes, why each fix was made, before/after verification, expected versus observed improvement and outstanding items. Show both files to the customer for review before sharing.
 
 If the customer requests voice assistance, use short sentences and one instruction per response and invite them to use the Codex/ChatGPT voice or read-aloud control available on their device. Do not claim that the skill can force audio playback when the client does not expose a voice function.
 
-Offer one closing choice:
+Always include the Lithe Audio support telephone, email and portal in the in-chat summary, Markdown report and PDF. Offer one closing choice:
 
 1. **Create an Outlook email with the report attached**
 2. **Keep the report on this computer**

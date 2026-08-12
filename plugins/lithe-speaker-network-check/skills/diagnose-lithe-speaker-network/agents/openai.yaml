@@ -1,4 +1,4 @@
 interface:
   display_name: "Lithe Speaker Network Check"
   short_description: "Find evidence and safely fix speaker dropouts"
-  default_prompt: "Use $diagnose-lithe-speaker-network for my real speaker issue. Ask one question per turn, then assess basic connectivity, DHCP/IP, RF, multicast/mDNS, AP behaviour, Cast and speaker logs without treating ping as a complete network pass. Correlate a probable root cause, action only the reversible fix I approve, verify before and after, and finish with a redacted customer PDF."
+  default_prompt: "Use $diagnose-lithe-speaker-network for my real speaker issue. Ask one question per turn, run the layered first-pass tests, then give me a detailed findings overview. Inspect my router only with Read permission, explain each evidence-backed proposed change and ask permission for that exact change. Verify before and after, then finish with the problem, what was fixed and why, outstanding items, Lithe Audio Support details and a redacted customer PDF."

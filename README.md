@@ -18,6 +18,7 @@ Customers can choose guided self-service or supervised support. In supervised su
 - Analyses customer-authorised speaker and router logs locally for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, access-point and discovery evidence.
 - Runs a layered diagnostic: basic connectivity, DHCP/IP, RF, multicast/mDNS, AP behaviour, Cast/services, speaker logs and deterministic correlation. A successful ping never passes the later layers.
 - Produces explicit DHCP health, dual-band/cross-band mDNS and physical/DHCP/multicast/RF/Cast topology assessments.
+- Presents a detailed first-pass findings overview before requesting permission to inspect the router, including what was tested, what the evidence means, what remains unknown and the likely fault areas.
 - Creates a redacted customer PDF containing the probable root cause, smoking-gun evidence, approved fixes, before/after proof and outstanding items.
 - Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
 - Presents a concise **Key issues found** and **What should be fixed and why** overview before proposing any change.
@@ -80,7 +81,7 @@ Codex will start the real customer-support workflow, ask for the affected speake
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
-Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.9.0.zip](lithe-speaker-network-check-plugin-v1.9.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.9.1.zip](lithe-speaker-network-check-plugin-v1.9.1.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
 Some Codex and ChatGPT installation screens insert this platform-owned draft:
 
@@ -115,7 +116,7 @@ If an older installation still shows all five questions together, remove the exi
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.9.0.zip](diagnose-lithe-speaker-network-v1.9.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
+The standalone [diagnose-lithe-speaker-network-v1.9.1.zip](diagnose-lithe-speaker-network-v1.9.1.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -309,7 +310,13 @@ verification
 customer_notes
 ```
 
-The report remains on the local computer. The customer should review it before sending it to support.
+The report remains on the local computer. The customer should review it before sending it to support. It closes with the problem found, evidence, approved fixes, why each fix was made, before-and-after verification, outstanding items and the published Lithe Audio Support details.
+
+For further help, contact Lithe Audio Support:
+
+- Telephone: +44 (0)1293 922015
+- Email: support@litheaudio.com
+- Support portal: https://support.litheaudio.com
 
 ## Supervised router support
 
@@ -317,16 +324,17 @@ Supervised support requires a Codex environment with suitable browser or compute
 
 The workflow is:
 
-1. Explain the inspection scope and obtain permission.
-2. Ask the customer to open the router's normal management page.
-3. Pause while the customer types credentials and completes MFA.
-4. Inspect relevant settings without changing them.
-5. Explain the evidence, proposed change, expected interruption, and rollback.
-6. Ask permission for that exact change.
-7. Apply one reversible change.
-8. Retest the speaker and record before-and-after results.
-9. Repeat only when another change is justified and separately approved.
-10. Create a redacted report if requested.
+1. Complete the first-pass speaker and network tests.
+2. Give the customer a detailed findings overview before opening the router.
+3. Explain the router inspection scope and obtain Read permission.
+4. Ask the customer to open the router's normal management page.
+5. Pause while the customer types credentials and completes MFA.
+6. Inspect the relevant router and access-point settings without changing them.
+7. Explain the evidence, device, exact current and proposed values, expected interruption, reason and rollback.
+8. Ask permission for that exact change; never use a generic permission request.
+9. Apply one reversible change, read back the saved value and retest.
+10. Repeat only when another change is justified and separately approved.
+11. Finish with a clear problem/fix/why summary and a redacted customer report containing Lithe Audio Support contact details.
 
 If browser control is unavailable, the skill falls back to guided instructions and support-report creation. It must never claim that it inspected or changed the router when it did not.
 
