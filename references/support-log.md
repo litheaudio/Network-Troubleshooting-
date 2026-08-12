@@ -8,6 +8,8 @@ Pass fields to `scripts/create_support_report.py` as repeated `--field "name=val
 
 When redacted collector/analyser JSON exists, pass it with `--log-analysis-json`. Let the script populate log status, coverage, ranked evidence, confidence and next proof. Use explicit `--field` values only to add customer context or override a reviewed value.
 
+When the layered correlation JSON exists, pass it with `--correlation-json`. Let the script populate layer results, DHCP health, dual-band and topology assessments, probable root cause, confidence, smoking-gun status, correlation evidence, targeted fix and expected improvement.
+
 Allowed names:
 
 - `product_name`
@@ -36,6 +38,14 @@ Allowed names:
 - `log_status`
 - `likely_cause`
 - `confidence`
+- `layer_results`
+- `dhcp_health`
+- `dual_band_assessment`
+- `topology_assessment`
+- `probable_root_cause`
+- `smoking_gun`
+- `correlation_evidence`
+- `correlated_timeline`
 - `initial_findings`
 - `meaning`
 - `before_measurements`
@@ -56,6 +66,8 @@ Example:
 ```powershell
 python scripts/create_support_report.py `
   --diagnostic-json diagnostic.json `
+  --log-analysis-json log-analysis.json `
+  --correlation-json correlation.json `
   --output Lithe-Support-Report.md `
   --field "symptom=Audio pauses and the speaker disappears" `
   --field "frequency=About once a week" `
@@ -76,6 +88,15 @@ python scripts/create_support_report.py `
   --field "customer_outcome=Playback and app visibility passed for five minutes" `
   --field "verification=Improved; recurring fault still requires monitoring"
 ```
+
+Create the customer PDF after reviewing the Markdown report:
+
+```powershell
+python scripts/create_support_pdf.py Lithe-Support-Report.md `
+  --output Lithe-Audio-Network-Support-Report.pdf
+```
+
+The PDF generator uses only the Python standard library. It does not upload the report or require an Internet download. Open the final PDF and visually check every page before offering it to the customer.
 
 The script rejects unknown fields, masks full MAC addresses, redacts likely secrets and public IP addresses, and does not upload the report.
 
@@ -100,6 +121,10 @@ Include:
 - symptoms and frequency;
 - relevant physical barriers;
 - source, time window, and redacted summary of relevant log evidence;
+- every diagnostic layer and its evidence source;
+- the full DHCP health block;
+- dual-band/cross-band mDNS and topology assessments;
+- probable root cause, confidence and explicit smoking-gun status;
 - whether the cause is confirmed, likely, or possible;
 - router/AP evidence;
 - exactly what changed;

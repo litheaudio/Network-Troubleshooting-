@@ -35,6 +35,8 @@ class PingResult:
     average_ms: Optional[float]
     maximum_ms: Optional[float]
     note: str
+    jitter_ms: Optional[float] = None
+    maximum_loss_burst_seconds: Optional[float] = None
 
 
 def private_ipv4(value: str) -> ipaddress.IPv4Address:
@@ -170,6 +172,45 @@ def parse_ping(
             maximum = max(reply_times)
             average = round(sum(reply_times) / len(reply_times), 3)
 
+    reply_latencies: list[float] = []
+    sequence: list[bool] = []
+    recognised_failures = 0
+    for line in text.splitlines():
+        if re.search(r"\bttl\s*[=:]\s*\d+\b", line, re.IGNORECASE):
+            sequence.append(True)
+            time_match = re.search(r"(?:=|<)\s*([\d.]+)\s*ms\b", line, re.IGNORECASE)
+            if time_match:
+                reply_latencies.append(float(time_match.group(1)))
+        elif re.search(
+            r"request timed out|destination host unreachable|general failure|timeout",
+            line,
+            re.IGNORECASE,
+        ):
+            sequence.append(False)
+            recognised_failures += 1
+    jitter = None
+    if len(reply_latencies) >= 2:
+        jitter = round(
+            sum(abs(current - previous) for previous, current in zip(reply_latencies, reply_latencies[1:]))
+            / (len(reply_latencies) - 1),
+            3,
+        )
+    maximum_burst = 0
+    current_burst = 0
+    for replied in sequence:
+        if replied:
+            current_burst = 0
+        else:
+            current_burst += 1
+            maximum_burst = max(maximum_burst, current_burst)
+    burst_seconds: Optional[float]
+    if loss == 0:
+        burst_seconds = 0.0
+    elif recognised_failures:
+        burst_seconds = float(maximum_burst)
+    else:
+        burst_seconds = None
+
     return PingResult(
         available=True,
         sent=sent,
@@ -179,6 +220,8 @@ def parse_ping(
         average_ms=average,
         maximum_ms=maximum,
         note="Target-only ping completed.",
+        jitter_ms=jitter,
+        maximum_loss_burst_seconds=burst_seconds,
     )
 
 
@@ -273,6 +316,11 @@ def classify(ping: PingResult, ports: dict[str, bool], source: Optional[str]) ->
         (ping.loss_percent is not None and ping.loss_percent > 0)
         or (ping.average_ms is not None and ping.average_ms > 50)
         or (ping.maximum_ms is not None and ping.maximum_ms > 100)
+        or (ping.jitter_ms is not None and ping.jitter_ms > 20)
+        or (
+            ping.maximum_loss_burst_seconds is not None
+            and ping.maximum_loss_burst_seconds >= 1
+        )
     ):
         return "degraded"
     return "healthy"
@@ -338,6 +386,22 @@ rtt min/avg/max/mdev = 2.100/4.200/8.300/1.000 ms
             2,
             0,
         ).received
+        == 2,
+        parse_ping(
+            "Reply from 192.168.1.45: bytes=32 time=2ms TTL=64\n"
+            "Request timed out.\n"
+            "Reply from 192.168.1.45: bytes=32 time=12ms TTL=64",
+            3,
+            1,
+        ).jitter_ms
+        == 10,
+        parse_ping(
+            "Reply from 192.168.1.45: bytes=32 time=2ms TTL=64\n"
+            "Request timed out.\nRequest timed out.\n"
+            "Reply from 192.168.1.45: bytes=32 time=3ms TTL=64",
+            4,
+            1,
+        ).maximum_loss_burst_seconds
         == 2,
         classify(
             PingResult(False, 0, 0, None, None, None, None, "Unavailable"),
@@ -447,6 +511,11 @@ def main() -> int:
                 f"min {ping.minimum_ms:g} ms / avg {ping.average_ms:g} ms / "
                 f"max {ping.maximum_ms:g} ms"
             )
+        print(
+            "Jitter/loss burst: "
+            f"{ping.jitter_ms if ping.jitter_ms is not None else 'unavailable'} ms / "
+            f"{ping.maximum_loss_burst_seconds if ping.maximum_loss_burst_seconds is not None else 'unavailable'} s"
+        )
     else:
         print(f"Ping: unavailable ({ping.note})")
     open_ports = [port for port, open_ in ports.items() if open_]

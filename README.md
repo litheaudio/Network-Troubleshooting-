@@ -16,6 +16,9 @@ Customers can choose guided self-service or supervised support. In supervised su
 - Deletes the raw speaker log after analysis by default and retains only provenance plus redacted findings.
 - Supports consent-gated target-only monitoring for daily or weekly intermittent faults.
 - Analyses customer-authorised speaker and router logs locally for time-correlated DHCP, Wi-Fi, timeout, packet-loss, reboot, roaming, access-point and discovery evidence.
+- Runs a layered diagnostic: basic connectivity, DHCP/IP, RF, multicast/mDNS, AP behaviour, Cast/services, speaker logs and deterministic correlation. A successful ping never passes the later layers.
+- Produces explicit DHCP health, dual-band/cross-band mDNS and physical/DHCP/multicast/RF/Cast topology assessments.
+- Creates a redacted customer PDF containing the probable root cause, smoking-gun evidence, approved fixes, before/after proof and outstanding items.
 - Distinguishes confirmed evidence from likely and possible causes instead of overstating a single log warning.
 - Presents a concise **Key issues found** and **What should be fixed and why** overview before proposing any change.
 - Detects likely DHCP, VPN-routing, weak-signal, interference, roaming, access-point, and client-isolation problems.
@@ -77,7 +80,7 @@ Codex will start the real customer-support workflow, ask for the affected speake
 
 The plugin contains the diagnostic skill and provides a live-support starter prompt in plugin surfaces that support custom starters.
 
-Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.8.0.zip](lithe-speaker-network-check-plugin-v1.8.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
+Lithe Audio should publish or share the validated [lithe-speaker-network-check-plugin-v1.9.0.zip](lithe-speaker-network-check-plugin-v1.9.0.zip) as a plugin. The customer installs **Lithe Speaker Network Check** from the supplied plugin link, then selects **Try in chat**.
 
 Some Codex and ChatGPT installation screens insert this platform-owned draft:
 
@@ -112,7 +115,7 @@ If an older installation still shows all five questions together, remove the exi
 
 ### Standalone skill fallback
 
-The standalone [diagnose-lithe-speaker-network-v1.8.0.zip](diagnose-lithe-speaker-network-v1.8.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
+The standalone [diagnose-lithe-speaker-network-v1.9.0.zip](diagnose-lithe-speaker-network-v1.9.0.zip) remains available for environments that install only individual skills. Its diagnostic workflow is the same. The surrounding product may supply its own generic **Try in chat** draft; the installed skill handles that draft only after it is sent.
 
 If **Install** or **Plugins** is unavailable, ask the Codex workspace administrator to enable plugin installation.
 
@@ -174,7 +177,7 @@ The customer can say **stop** at any time.
 
 ## Result meanings
 
-- **Healthy:** the speaker responds with no measured loss and stable local latency.
+- **Healthy:** basic IP connectivity passed during this sample; DHCP, RF, discovery, AP, Cast and speaker-log layers still require assessment.
 - **Degraded:** the test found packet loss, average latency above 50 ms, or spikes above 100 ms.
 - **ICMP blocked:** ping failed but a safe TCP connection succeeded; the speaker may still be online.
 - **ICMP unavailable:** a safe TCP check answered, but this computer could not measure ping reliably.

@@ -94,11 +94,12 @@ A healthy short test proves only that the IP path was healthy during the sample.
 Before requesting any further access, give the customer a short result in this exact order:
 
 ```text
-First-test finding: [plain-English result]
+First-test finding: [plain-English basic-connectivity result]
 Evidence: [replies/loss/latency/TCP/route facts]
 What this means: [what the evidence proves and what it does not prove]
 How to fix it: [the smallest likely fix or the next evidence needed before changing anything]
-Evidence source: Live target-only network test; no support API was used.
+Evidence source: Live target-only basic-connectivity test; no support API was used.
+Next: Continue through DHCP/IP, RF, multicast/mDNS, AP behaviour, Cast/services and speaker logs. A connectivity pass does not pass those layers.
 ```
 
 Interpret the result accurately:
@@ -112,6 +113,12 @@ Interpret the result accurately:
 - **Route warning:** The diagnostic computer may be on a VPN, guest network or different subnet. Correct that route first and repeat the test.
 
 Never call a suggested action a confirmed fix at this stage. Label it **likely fix** until logs/AP evidence support it and **verified fix** only after a successful before/after retest and customer playback result.
+
+Read [diagnostic-layers.md](references/diagnostic-layers.md) and complete every applicable layer. Do not use this shortcut: **Ping passes -> network passes -> investigate product**. Use:
+
+**Basic connectivity -> DHCP/IP -> RF -> multicast/mDNS -> AP behaviour -> Cast/services -> speaker logs -> correlation engine -> probable root cause.**
+
+Ask or detect the SSID network mode after the first live test: 2.4 GHz only, separate 2.4/5 GHz SSIDs, combined 2.4/5 GHz, or combined 2.4/5/6 GHz. Inspect the speaker and controller bands independently. Different bands are not a fault when same-subnet cross-band mDNS works.
 
 When the speaker is reachable but AirPlay, Spotify, the Lithe app and the visible web page disagree, offer one deeper read-only checkpoint. After permission, read [service-health.md](references/service-health.md) and run `scripts/check_speaker_services.py` against the supplied IP. Use it to separate network reachability from a stalled service. Do not describe service-port evidence as internal logs.
 
@@ -193,6 +200,10 @@ Omit `--failure-time` only when the customer cannot identify a failure window. T
 
 Treat `future_clock_warning: true` or missing failure coverage as a block on smoking-gun classification. Do not rank routine successful DHCP messages or generic user-interface words as faults. Prefer evidence severity and causal order over raw event count.
 
+After collecting the available layer evidence, create the redacted `layer-evidence.json` described in [diagnostic-layers.md](references/diagnostic-layers.md) and run `scripts/correlate_diagnostics.py`. Supply the live network JSON, service JSON, log-analysis JSON and layer evidence that actually exist. Never invent an unavailable field. Use its result to produce the DHCP health block, dual-band assessment, topology assessment, check matrix and probable root cause.
+
+For a smoking gun, require an ordered failure-window chain such as DHCP renewal -> gateway unreachable -> DHCP ACK -> Cast reconnect, plus corroboration from another source. A Cast error alone is not a smoking gun.
+
 Read [speaker-log-analysis.md](references/speaker-log-analysis.md). Classify evidence as:
 
 - **Confirmed:** a matching event belongs to the affected speaker, overlaps the failure and directly explains the interruption.
@@ -207,16 +218,26 @@ Before analysing any exported file, verify that it exists and its size is greate
 
 ## Give the result without delay
 
-After local and available log/AP evidence, stop interviewing and present:
+After the layered correlation, stop interviewing and present:
 
 ```text
-Result: [Healthy / Degraded / ICMP blocked / ICMP unavailable / Probe unavailable / Unreachable / Route warning]
+Basic connectivity: [Pass / Concern / Evidence unavailable]
 
 Measured now:
 [loss and latency measurements]
 
-Evidence collected:
-[speaker-log download status, time coverage and router/access-point evidence]
+DHCP/IP: [Pass / Concern / Evidence unavailable] - [structured DHCP health]
+RF: [status] - [band, RSSI, retries, width, channel, overlap, AP density]
+Multicast/mDNS: [status] - [same subnet/VLAN, isolation, UDP 5353/cross-band discovery]
+AP behaviour: [status] - [serving AP, roaming, lock/policy, channel/DFS, backhaul]
+Cast/services: [status] - [AirPlay, Spotify, Lithe app, playback and reconnect evidence]
+Speaker logs: [status] - [download, coverage and redacted failure-window evidence]
+Topology: [physical / DHCP / multicast / RF / Cast results]
+
+Probable root cause: [cause or Undetermined]
+Confidence: [Confirmed / Likely / Possible / Undetermined]
+Smoking gun: [Yes / No]
+Correlation: [ordered evidence chain]
 
 Key issues found:
 1. [issue] - [Confirmed / Likely / Possible] - [evidence] - [customer impact]
@@ -230,7 +251,7 @@ Recommended next action:
 [one smallest evidence-backed action, expected interruption and rollback]
 ```
 
-Show no more than three key issues. Distinguish a real log event from a network symptom and from a hypothesis. For each issue, state what would confirm or reject it. For every proposed fix, explain why it is appropriate and what improvement is expected. If evidence is insufficient, say exactly what is missing. Do not fill the gap with generic advice or more lifestyle questions.
+Show no more than three ranked issues. Distinguish a real log event from a network symptom and from a hypothesis. For each issue, state what would confirm or reject it. For every proposed fix, explain why it is appropriate and what improvement is expected. If evidence is insufficient, say exactly what is missing. Never use **product fault** as a catch-all. Do not fill the gap with generic advice or more lifestyle questions.
 
 ## Fix and verify
 
@@ -296,7 +317,7 @@ At the end of every completed diagnostic session, render a redacted customer rep
 
 Clearly separate **Expected improvement** from **Observed after retest**. Never claim an expected benefit was achieved unless the retest and customer result support it. Use warm, direct language and finish with: **Thank you for your time today.** Do not imply the recurring problem is permanently resolved when only the current connection has recovered.
 
-Then read [support-log.md](references/support-log.md). Ask whether the customer wants the report saved locally. Local file creation requires this consent; the in-chat report does not. If approved, create an email-ready redacted report with `scripts/create_support_report.py`. Pass the diagnostic JSON and saved redacted collector/analyser JSON so evidence is transferred deterministically rather than copied by hand. Include the first findings, meaning, before measurements, approved fix, completed work, expected improvement, after measurements, customer outcome, verification, log-collection status and outstanding items. Show the saved report to the customer for review.
+Then read [support-log.md](references/support-log.md). Ask whether the customer wants the report saved locally. Local file creation requires this consent; the in-chat report does not. If approved, create an email-ready redacted Markdown report with `scripts/create_support_report.py`, passing `--diagnostic-json`, `--log-analysis-json` and `--correlation-json` when available. Then create `Lithe-Audio-Network-Support-Report.pdf` with `scripts/create_support_pdf.py`. The PDF must include the layer findings, DHCP health, dual-band result, topology, probable root cause, smoking-gun status/evidence, approved fixes, why each fix was made, before/after verification, expected versus observed improvement and outstanding items. Show both files to the customer for review before sharing.
 
 If the customer requests voice assistance, use short sentences and one instruction per response and invite them to use the Codex/ChatGPT voice or read-aloud control available on their device. Do not claim that the skill can force audio playback when the client does not expose a voice function.
 

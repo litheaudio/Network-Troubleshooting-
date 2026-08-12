@@ -1,6 +1,6 @@
 {
   "name": "lithe-speaker-network-check",
-  "version": "1.8.0+codex.20260811164032",
+  "version": "1.9.0+codex.20260812124500",
   "description": "Friendly live Lithe Audio speaker and home-network support.",
   "author": {
     "name": "Lithe Audio",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Lithe Speaker Network Check",
     "shortDescription": "Friendly live speaker and network support",
-    "longDescription": "Starts a real Lithe Audio case, asks exactly five key questions, immediately explains the first target-only finding, analyses approved evidence, actions one separately approved reversible fix and produces a redacted before-and-after customer report.",
+    "longDescription": "Starts a real Lithe Audio case, asks exactly five key questions, checks connectivity, DHCP/IP, RF, multicast/mDNS, AP behaviour, Cast and speaker logs, correlates a probable root cause, actions one approved reversible fix and creates a redacted PDF report.",
     "developerName": "Lithe Audio",
     "category": "Productivity",
     "capabilities": [

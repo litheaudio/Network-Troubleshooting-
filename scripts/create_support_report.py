@@ -42,6 +42,14 @@ ALLOWED_FIELDS = {
     "log_status": "Log collection status",
     "likely_cause": "Likely cause",
     "confidence": "Diagnostic confidence",
+    "layer_results": "Layer results",
+    "dhcp_health": "DHCP health",
+    "dual_band_assessment": "Dual-band assessment",
+    "topology_assessment": "Topology assessment",
+    "probable_root_cause": "Probable root cause",
+    "smoking_gun": "Smoking gun",
+    "correlation_evidence": "Correlation evidence",
+    "correlated_timeline": "Failure-window timeline",
     "initial_findings": "Initial findings",
     "meaning": "What the findings mean",
     "before_measurements": "Before change",
@@ -182,6 +190,48 @@ def fields_from_log_analysis(path: Path | None) -> dict[str, str]:
     return fields
 
 
+def fields_from_correlation(path: Path | None) -> dict[str, str]:
+    if path is None:
+        return {}
+    if path.stat().st_size > MAX_JSON_BYTES:
+        raise ValueError("Correlation JSON exceeds the 5 MB limit.")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    root = data.get("probable_root_cause", {})
+    layers = data.get("layers", {})
+    dhcp = data.get("dhcp_health", {})
+    dual = data.get("dual_band_assessment", {})
+    topology = data.get("topology_assessment", {})
+    timeline = data.get("correlated_timeline", [])
+    if not all(isinstance(item, dict) for item in [root, layers, dhcp, dual, topology]):
+        raise ValueError("Correlation JSON contains an invalid object.")
+    layer_text = "; ".join(
+        f"{name}={item.get('status', 'unknown')}"
+        for name, item in layers.items()
+        if isinstance(item, dict)
+    )
+    evidence = root.get("evidence", [])
+    if not isinstance(evidence, list):
+        evidence = [str(evidence)]
+    timeline_text = "; ".join(
+        f"{item.get('timestamp', '?')} {item.get('event', 'event')} [{item.get('source', 'unknown')}]"
+        for item in timeline
+        if isinstance(item, dict)
+    ) if isinstance(timeline, list) else ""
+    return {
+        "layer_results": sanitise(layer_text or "No layer results"),
+        "dhcp_health": sanitise(json.dumps(dhcp, separators=(",", ":"))),
+        "dual_band_assessment": sanitise(json.dumps(dual, separators=(",", ":"))),
+        "topology_assessment": sanitise(json.dumps(topology, separators=(",", ":"))),
+        "probable_root_cause": sanitise(root.get("label", "Undetermined")),
+        "confidence": sanitise(root.get("confidence", "Undetermined")),
+        "smoking_gun": "Yes" if root.get("smoking_gun") is True else "No",
+        "correlation_evidence": sanitise("; ".join(str(item) for item in evidence[:4])),
+        "correlated_timeline": sanitise(timeline_text or "No complete failure-window sequence established"),
+        "approved_fix": sanitise(root.get("targeted_fix", "No evidence-backed fix selected")),
+        "expected_improvement": sanitise(root.get("expected_improvement", "Not established")),
+    }
+
+
 def line(label: str, value: Any) -> str:
     return f"- **{label}:** {sanitise(value)}"
 
@@ -280,6 +330,21 @@ def build_report(diagnostic: dict[str, Any], fields: dict[str, str]) -> str:
         "log_evidence",
         "likely_cause",
         "confidence",
+    ]:
+        if key in fields:
+            sections.append(line(ALLOWED_FIELDS[key], fields[key]))
+
+    sections.extend(["", "## Layered correlation and probable root cause", ""])
+    for key in [
+        "layer_results",
+        "dhcp_health",
+        "dual_band_assessment",
+        "topology_assessment",
+        "probable_root_cause",
+        "confidence",
+        "smoking_gun",
+        "correlation_evidence",
+        "correlated_timeline",
     ]:
         if key in fields:
             sections.append(line(ALLOWED_FIELDS[key], fields[key]))
@@ -393,6 +458,31 @@ def run_self_test() -> int:
             encoding="utf-8",
         )
         derived = fields_from_log_analysis(analysis_path)
+        correlation_path = Path(directory) / "correlation.json"
+        correlation_path.write_text(
+            json.dumps(
+                {
+                    "layers": {"basic_connectivity": {"status": "Pass"}},
+                    "dhcp_health": {"result": "Pass"},
+                    "dual_band_assessment": {"result": "Pass"},
+                    "topology_assessment": {"physical_topology": "pass"},
+                    "correlated_timeline": [
+                        {"timestamp": "14:31:05", "event": "dhcp_renew", "source": "speaker_log"},
+                        {"timestamp": "14:31:09", "event": "cast_reconnect", "source": "cast_history"},
+                    ],
+                    "probable_root_cause": {
+                        "label": "DHCP lease instability",
+                        "confidence": "Confirmed",
+                        "smoking_gun": True,
+                        "evidence": ["Renewal failure aligned with dropout"],
+                        "targeted_fix": "Create a router-side reservation",
+                        "expected_improvement": "Keep the address stable",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        correlated = fields_from_correlation(correlation_path)
     checks = [
         "hunter2" not in report,
         "8.8.8.8" not in report,
@@ -412,6 +502,9 @@ def run_self_test() -> int:
         fields_from_log_analysis(None) == {},
         derived["likely_cause"] == "dhcp",
         "corroboration required" in derived["confidence"],
+        correlated["smoking_gun"] == "Yes",
+        correlated["probable_root_cause"] == "DHCP lease instability",
+        "cast_reconnect" in correlated["correlated_timeline"],
     ]
     if all(checks):
         print("Self-test passed.")
@@ -426,6 +519,7 @@ def main() -> int:
     )
     parser.add_argument("--diagnostic-json", type=Path)
     parser.add_argument("--log-analysis-json", type=Path)
+    parser.add_argument("--correlation-json", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--field", action="append", default=[], metavar="NAME=VALUE")
     parser.add_argument("--self-test", action="store_true")
@@ -442,6 +536,7 @@ def main() -> int:
     try:
         diagnostic = load_diagnostic(args.diagnostic_json)
         fields = fields_from_log_analysis(args.log_analysis_json)
+        fields.update(fields_from_correlation(args.correlation_json))
         fields.update(parse_fields(args.field))
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         print(f"Cannot create report: {exc}", file=sys.stderr)

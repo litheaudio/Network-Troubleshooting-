@@ -92,6 +92,10 @@ Say:
 
 > If known, include the access point or node name/room, Wi-Fi band, and whether its backhaul is wired or wireless.
 
+Also say:
+
+> If you know it, select the Wi-Fi network mode: **2.4 GHz only**, **separate 2.4 and 5 GHz names**, **combined 2.4/5 GHz**, **combined 2.4/5/6 GHz**, or **not sure**. I can detect this from the router later if you are unsure.
+
 Do not ask separate follow-ups for unknown values before testing.
 
 **TURN BOUNDARY:** End the response immediately. Do not show question 5 until the customer replies.
